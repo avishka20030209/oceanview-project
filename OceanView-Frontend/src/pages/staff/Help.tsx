@@ -55,7 +55,7 @@ export function StaffHelp() {
               Need urgent assistance? Contact the system administrator directly.
             </p>
             <div className="space-y-3">
-              <a href="tel:+94771234567" className="block">
+              <a href="tel:+94768164113" className="block">
                 <Button
                   className="w-full bg-white text-ocean-deep hover:bg-gray-100"
                   leftIcon={<Phone className="h-4 w-4" />}>

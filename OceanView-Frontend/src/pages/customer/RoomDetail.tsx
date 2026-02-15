@@ -119,7 +119,7 @@ export function RoomDetail() {
       formData.append('guestName', 'Guest');
       formData.append('checkIn', checkIn);
       formData.append('checkOut', checkOut);
-      formData.append('status', 'Booked');
+      formData.append('status', 'PENDING');
       formData.append('amount', String(bill.total));
 
       const res = await fetch('/oceanview-backend/reservation', {

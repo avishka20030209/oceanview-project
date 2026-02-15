@@ -4,7 +4,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
-import { Search, Eye, Edit2, Trash2, Plus } from 'lucide-react';
+import { Search, Eye, Edit2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { formatCurrency } from '../../utils/format';
@@ -29,22 +29,15 @@ export function ReservationManagement() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [editStatus, setEditStatus] = useState('');
-  const [addForm, setAddForm] = useState({
-    guestName: '',
-    roomName: '',
-    checkIn: '',
-    checkOut: '',
-    amount: '',
-    status: 'CONFIRMED',
-  });
 
   // ---------------- Fetch Reservations ----------------
   const fetchReservations = async () => {
     try {
-      const res = await fetch('/oceanview-backend/reservation?action=adminAll');
+      const res = await fetch('/oceanview-backend/reservation?action=adminAll', {
+        credentials: 'include',
+      });
       if (!res.ok) throw new Error('Failed to fetch reservations');
       const data = await res.json();
       if (data.status === 'success') {
@@ -79,22 +72,25 @@ export function ReservationManagement() {
   };
 
   const confirmStatusChange = async () => {
-    if (!selectedRes) return;
+    if (!selectedRes || selectedRes.id == null) return;
+
     try {
       const payload = new URLSearchParams();
       payload.append('action', 'updateStatus');
-      payload.append('id', selectedRes.id.toString());
+      payload.append('id', String(selectedRes.id));
       payload.append('status', editStatus);
 
       const res = await fetch('/oceanview-backend/reservation', {
         method: 'POST',
         body: payload,
+        credentials: 'include',
       });
       const result = await res.json();
       if (result.status === 'success') {
         toast.success('Status updated successfully');
         fetchReservations();
         setIsEditModalOpen(false);
+        setSelectedRes(null);
       } else {
         toast.error(result.message || 'Update failed');
       }
@@ -104,67 +100,33 @@ export function ReservationManagement() {
   };
 
   const confirmDelete = async () => {
-    if (!selectedRes) return;
-    try {
-      const payload = new URLSearchParams();
-      payload.append('action', 'delete');
-      payload.append('id', selectedRes.id.toString());
-
-      const res = await fetch('/oceanview-backend/reservation', {
-        method: 'POST',
-        body: payload,
-      });
-      const result = await res.json();
-      if (result.status === 'success') {
-        toast.success('Reservation deleted successfully');
-        fetchReservations();
-        setIsDeleteModalOpen(false);
-      } else {
-        toast.error(result.message || 'Delete failed');
-      }
-    } catch (err: any) {
-      toast.error(err.message);
-    }
-  };
-
-  const handleAddReservation = async () => {
-    if (!addForm.guestName || !addForm.roomName || !addForm.checkIn || !addForm.checkOut || !addForm.amount) {
-      toast.error('Please fill in all fields');
+    if (!selectedRes || selectedRes.id == null) {
+      toast.error('Invalid reservation selected.');
       return;
     }
 
     try {
       const payload = new URLSearchParams();
-      payload.append('action', 'add');
-      payload.append('guestName', addForm.guestName);
-      payload.append('roomName', addForm.roomName);
-      payload.append('checkIn', addForm.checkIn);
-      payload.append('checkOut', addForm.checkOut);
-      payload.append('amount', addForm.amount);
-      payload.append('status', addForm.status);
+      payload.append('action', 'delete');
+      payload.append('reservationId', String(selectedRes.id));
 
       const res = await fetch('/oceanview-backend/reservation', {
         method: 'POST',
         body: payload,
+        credentials: 'include',
       });
+
       const result = await res.json();
       if (result.status === 'success') {
-        toast.success('Reservation added successfully');
+        toast.success('Reservation deleted successfully');
         fetchReservations();
-        setIsAddModalOpen(false);
-        setAddForm({
-          guestName: '',
-          roomName: '',
-          checkIn: '',
-          checkOut: '',
-          amount: '',
-          status: 'CONFIRMED',
-        });
+        setIsDeleteModalOpen(false);
+        setSelectedRes(null);
       } else {
-        toast.error(result.message || 'Add reservation failed');
+        toast.error(result.message || 'Delete failed');
       }
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || 'Error deleting reservation');
     }
   };
 
@@ -211,13 +173,23 @@ export function ReservationManagement() {
       header: 'Actions',
       accessor: (r: Reservation) => (
         <div className="flex gap-2">
-          <button onClick={() => handleViewDetails(r)} className="p-1 text-gray-400 hover:text-ocean-DEFAULT">
+          <button
+            onClick={() => handleViewDetails(r)}
+            className="p-1 text-gray-400 hover:text-ocean-DEFAULT"
+          >
             <Eye className="h-4 w-4" />
           </button>
-          <button onClick={() => handleEditStatus(r)} className="p-1 text-gray-400 hover:text-blue-500">
+          <button
+            onClick={() => handleEditStatus(r)}
+            className="p-1 text-gray-400 hover:text-blue-500"
+          >
             <Edit2 className="h-4 w-4" />
           </button>
-          <button onClick={() => handleDelete(r)} className="p-1 text-gray-400 hover:text-red-500">
+          <button
+            onClick={() => handleDelete(r)}
+            className="p-1 text-gray-400 hover:text-red-500"
+            disabled={!r.id} // disables if id is null/undefined
+          >
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
@@ -230,9 +202,6 @@ export function ReservationManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Reservation Management</h1>
-        <Button leftIcon={<Plus />} onClick={() => setIsAddModalOpen(true)}>
-          Add Reservation
-        </Button>
       </div>
 
       {/* Search */}
@@ -314,7 +283,11 @@ export function ReservationManagement() {
             <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={confirmDelete}>
+            <Button
+              variant="danger"
+              onClick={confirmDelete}
+              disabled={!selectedRes || !selectedRes.id}
+            >
               Delete
             </Button>
           </>
@@ -323,66 +296,6 @@ export function ReservationManagement() {
         <p>
           Are you sure you want to delete reservation #{selectedRes?.id} for {selectedRes?.guestName}?
         </p>
-      </Modal>
-
-      {/* Add Modal */}
-      <Modal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        title="Add New Reservation"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setIsAddModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddReservation}>Create</Button>
-          </>
-        }
-      >
-        <div className="space-y-2">
-          <Input
-            label="Guest Name"
-            placeholder="John Doe"
-            value={addForm.guestName}
-            onChange={(e) => setAddForm({ ...addForm, guestName: e.target.value })}
-          />
-          <Input
-            label="Room Name"
-            placeholder="Room 101"
-            value={addForm.roomName}
-            onChange={(e) => setAddForm({ ...addForm, roomName: e.target.value })}
-          />
-          <Input
-            label="Check In"
-            type="date"
-            value={addForm.checkIn}
-            onChange={(e) => setAddForm({ ...addForm, checkIn: e.target.value })}
-          />
-          <Input
-            label="Check Out"
-            type="date"
-            value={addForm.checkOut}
-            onChange={(e) => setAddForm({ ...addForm, checkOut: e.target.value })}
-          />
-          <Input
-            label="Amount"
-            type="number"
-            placeholder="100.00"
-            value={addForm.amount}
-            onChange={(e) => setAddForm({ ...addForm, amount: e.target.value })}
-          />
-          <select
-            className="w-full border rounded px-2 py-1"
-            value={addForm.status}
-            onChange={(e) => setAddForm({ ...addForm, status: e.target.value })}
-          >
-            <option value="PENDING">Pending</option>
-            <option value="CONFIRMED">Confirmed</option>
-            <option value="CHECKED_IN">Checked In</option>
-            <option value="CHECKED_OUT">Checked Out</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
-        </div>
       </Modal>
     </div>
   );

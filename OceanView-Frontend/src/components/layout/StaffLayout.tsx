@@ -23,7 +23,7 @@ export function StaffLayout() {
     href: '/staff/new-reservation'
   },
   {
-    label: 'Search',
+    label: 'View Reservations',
     icon: Search,
     href: '/staff/search'
   },
@@ -44,7 +44,7 @@ export function StaffLayout() {
   }];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50" >
       <Sidebar items={navItems} role="Staff" />
       <div className="flex-1 flex flex-col min-w-0">
         <Header

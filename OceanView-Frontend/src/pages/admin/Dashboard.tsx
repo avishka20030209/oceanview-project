@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { DollarSign, Users, Calendar, BedDouble } from 'lucide-react';
 import { StatCard } from '../../components/StatCard';
 import { Card } from '../../components/ui/Card';
@@ -36,7 +36,7 @@ export function AdminDashboard() {
   // --------------------------
   // Fetch all reservations
   // --------------------------
-  const fetchReservations = async () => {
+  const fetchReservations = useCallback(async () => {
     try {
       const res = await fetch('/oceanview-backend/reservation?action=adminAll', {
         credentials: 'include',
@@ -55,14 +55,21 @@ export function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchReservations();
-  }, []);
+  }, [fetchReservations]);
 
   // --------------------------
-  // Calculations for Stats
+  // Remove a reservation locally (after deletion)
+  // --------------------------
+  const removeReservation = (id: number) => {
+    setReservations((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  // --------------------------
+  // Stats Calculations
   // --------------------------
   const confirmedBookings = reservations.filter(
     (r) => r.status.toUpperCase() === 'CONFIRMED'
@@ -75,7 +82,7 @@ export function AdminDashboard() {
   const activeBookings = confirmedBookings + pendingBookings;
 
   const revenue = reservations
-    .filter((r) => r.status.toUpperCase() === 'CONFIRMED')
+    .filter((r) => r.status.toUpperCase() === 'CHECKED_OUT' && r.paid)
     .reduce((sum, r) => sum + (r.amount || 0), 0);
 
   const occupancyRate = totalRooms > 0 ? Math.round((activeBookings / totalRooms) * 100) : 0;
@@ -174,7 +181,7 @@ export function AdminDashboard() {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: '#6B7280', fontSize: 12 }}
-                  tickFormatter={(val) => `$${(val / 1000).toFixed(1)}k`}
+                  tickFormatter={(val) => `LKR ${(val / 1000).toFixed(1)}k`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -183,7 +190,7 @@ export function AdminDashboard() {
                     border: '1px solid #E5E7EB',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                  formatter={(value: number) => [`LKR ${value.toLocaleString()}`, 'Revenue']}
                 />
                 <Area
                   type="monotone"

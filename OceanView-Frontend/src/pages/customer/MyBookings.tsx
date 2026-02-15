@@ -6,7 +6,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Reservation } from '../../types';
 import { formatCurrency } from '../../utils/format';
 import { format } from 'date-fns';
-import { Calendar, Eye, X, CreditCard } from 'lucide-react';
+import { Calendar, Eye, X, CreditCard,Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function MyBookings() {
@@ -73,6 +73,9 @@ export function MyBookings() {
     setIsCancelModalOpen(true);
   };
 
+  // ---------------------------
+  // Delete booking permanently
+  // ---------------------------
   const confirmCancel = async () => {
     if (!selectedReservation) return;
 
@@ -81,26 +84,23 @@ export function MyBookings() {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
-          action: 'updateStatus',
-          id: String(selectedReservation.id),
-          status: 'CANCELLED',
+          action: 'delete',
+          reservationId: String(selectedReservation.id),
         }),
         credentials: 'include',
       });
       const data = await res.json();
 
       if (data.status === 'success') {
-        toast.success('Booking cancelled successfully');
+        toast.success('Booking deleted permanently');
         setReservations((prev) =>
-          prev.map((r) =>
-            r.id === selectedReservation.id ? { ...r, status: 'CANCELLED' } : r
-          )
+          prev.filter((r) => r.id !== selectedReservation.id)
         );
       } else {
-        toast.error(data.message || 'Failed to cancel booking');
+        toast.error(data.message || 'Failed to delete booking');
       }
     } catch (err: any) {
-      toast.error(err.message || 'Error cancelling booking');
+      toast.error(err.message || 'Error deleting booking');
     } finally {
       setIsCancelModalOpen(false);
       setSelectedReservation(null);
@@ -120,7 +120,6 @@ export function MyBookings() {
     if (!selectedReservation) return;
 
     try {
-      // Simulate sending payment method to backend
       const res = await fetch('/oceanview-backend/reservation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -195,7 +194,7 @@ export function MyBookings() {
       CHECKED_IN: 'info',
       CHECKED_OUT: 'default',
     };
-    return variants[status.toUpperCase()] || 'default';
+    return variants[status.toUpperCase()] || 'warning';
   };
 
   if (loading) return <div className="p-12 text-center">Loading your bookings...</div>;
@@ -221,8 +220,8 @@ export function MyBookings() {
               onClick={() => setFilter(tab.key as any)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                 filter === tab.key
-                  ? 'bg-ocean-DEFAULT text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
+                  ? 'bg-ocean-deep text-white shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-50'
               }`}
             >
               {tab.label}
@@ -273,7 +272,7 @@ export function MyBookings() {
                           View Details
                         </Button>
 
-                        {reservation.status.toUpperCase() === 'CONFIRMED' && (
+                        {reservation.status.toUpperCase() === 'PENDING' && (
                           <Button
                             size="sm"
                             variant="danger"
@@ -283,11 +282,24 @@ export function MyBookings() {
                             Cancel
                           </Button>
                         )}
+                          {reservation.status.toUpperCase() === 'CANCELLED' && (
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            className='text-white'
+                            leftIcon={<Trash className="h-4 w-4" />}
+                            onClick={() => handleCancelBooking(reservation)}
+                          >
+                            Delete Reservation
+                          </Button>
+                          
+                        )}
 
-                        {reservation.status.toUpperCase() === 'CHECKED_OUT' && !reservation.paid && (
+                        {reservation.status.toUpperCase() === 'CONFIRMED' && !reservation.paid && (
                           <Button
                             size="sm"
                             variant="success"
+                            className='bg-emerald-500 text-white hover:bg-emerald-600'
                             leftIcon={<CreditCard className="h-4 w-4" />}
                             onClick={() => handlePayNow(reservation)}
                           >
@@ -375,17 +387,17 @@ export function MyBookings() {
           footer={
             <>
               <Button variant="ghost" onClick={() => setIsCancelModalOpen(false)}>Keep Booking</Button>
-              <Button variant="danger" onClick={confirmCancel}>Yes, Cancel Booking</Button>
+              <Button variant="danger" onClick={confirmCancel}>Yes, Delete Permanently</Button>
             </>
           }
         >
           <div className="py-4">
             <p className="text-gray-600 mb-4">
-              Are you sure you want to cancel your booking for <strong>{selectedReservation?.roomName}</strong>?
+              Are you sure you want to <strong>permanently delete</strong> your booking for <strong>{selectedReservation?.roomName}</strong>?
             </p>
-            <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4">
-              <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> Cancellation is free up to 24 hours before check-in. After that, cancellation fees may apply.
+            <div className="bg-red-50 border border-red-100 rounded-lg p-4">
+              <p className="text-sm text-red-800">
+                <strong>Note:</strong> This action is irreversible. Once deleted, the booking cannot be recovered.
               </p>
             </div>
           </div>
@@ -393,33 +405,112 @@ export function MyBookings() {
 
         {/* Payment Modal */}
         <Modal
-          isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
-          title="Select Payment Method"
-          footer={
-            <>
-              <Button variant="ghost" onClick={() => setIsPaymentModalOpen(false)}>Cancel</Button>
-              <Button variant="success" onClick={confirmPayment}>Confirm Payment</Button>
-            </>
-          }
+  isOpen={isPaymentModalOpen}
+  onClose={() => setIsPaymentModalOpen(false)}
+  title="Select Payment Method"
+  footer={
+    <>
+      <Button variant="ghost" onClick={() => setIsPaymentModalOpen(false)}>Cancel</Button>
+      <Button variant="success" onClick={confirmPayment}>
+        Pay {selectedReservation ? formatCurrency(selectedReservation.amount) : ''}
+      </Button>
+    </>
+  }
+>
+  <div className="py-4 space-y-6">
+    <p className="text-gray-600">Choose a payment method for your booking:</p>
+
+    {/* Payment Method Selection */}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {[
+        {
+          name: 'Credit Card',
+          
+        },
+        {
+          name: 'PayPal',
+         
+        },
+        {
+          name: 'Cash',
+          icon: (
+            <svg className="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M..." /> {/* Replace with real cash SVG */}
+            </svg>
+          ),
+        },
+      ].map((method) => (
+        <div
+          key={method.name}
+          onClick={() => setPaymentMethod(method.name as any)}
+          className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all shadow-sm hover:shadow-md ${
+            paymentMethod === method.name
+              ? 'border-ocean-DEFAULT bg-ocean-50'
+              : 'border-gray-300 bg-white'
+          }`}
         >
-          <div className="py-4 space-y-4">
-            <p className="text-gray-600">Choose a payment method for your booking:</p>
-            <div className="flex flex-col gap-2">
-              {['Credit Card', 'PayPal', 'Cash'].map((method) => (
-                <button
-                  key={method}
-                  onClick={() => setPaymentMethod(method as any)}
-                  className={`px-4 py-2 rounded-lg border ${
-                    paymentMethod === method ? 'bg-ocean-DEFAULT text-white border-ocean-DEFAULT' : 'bg-white text-gray-700 border-gray-300'
-                  } text-left`}
-                >
-                  {method}
-                </button>
-              ))}
-            </div>
+          {method.icon}
+          <div className="font-medium text-gray-800">{method.name}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Card Details Form */}
+    {paymentMethod === 'Credit Card' && (
+      <div className="mt-4 p-4 border rounded-lg bg-white shadow-sm space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Cardholder Name</label>
+          <input
+            type="text"
+            placeholder="John Doe"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-ocean-DEFAULT focus:border-ocean-DEFAULT sm:text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Card Number</label>
+          <input
+            type="text"
+            placeholder="1234 5678 9012 3456"
+            maxLength={19}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-ocean-DEFAULT focus:border-ocean-DEFAULT sm:text-sm"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
+            <input
+              type="text"
+              placeholder="MM/YY"
+              maxLength={5}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-ocean-DEFAULT focus:border-ocean-DEFAULT sm:text-sm"
+            />
           </div>
-        </Modal>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">CVV</label>
+            <input
+              type="password"
+              placeholder="123"
+              maxLength={3}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-ocean-DEFAULT focus:border-ocean-DEFAULT sm:text-sm"
+            />
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Selected Summary */}
+    <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+      <p className="text-gray-700">
+        Selected Method: <span className="font-semibold">{paymentMethod}</span>
+      </p>
+      {selectedReservation && (
+        <p className="text-gray-900 font-bold text-lg">
+          Amount to Pay: {formatCurrency(selectedReservation.amount)}
+        </p>
+      )}
+    </div>
+  </div>
+</Modal>
 
       </div>
     </div>

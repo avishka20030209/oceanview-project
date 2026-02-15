@@ -7,7 +7,15 @@ import { toast } from 'sonner';
 import { Calendar, User, CheckCircle } from 'lucide-react';
 
 // Utility to format LKR
-const formatCurrency = (amount: number) => `LKR ${amount.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+const formatCurrency = (amount: number) =>
+  `LKR ${amount.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
+
+interface SessionData {
+  userId: number;
+  fullName: string;
+  email: string;
+  role: string; // "CUSTOMER" or "STAFF"
+}
 
 export function NewReservation() {
   const navigate = useNavigate();
@@ -15,6 +23,7 @@ export function NewReservation() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [availability, setAvailability] = useState<boolean | null>(null);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [session, setSession] = useState<SessionData | null>(null);
 
   const [formData, setFormData] = useState({
     roomId: '',
@@ -23,11 +32,29 @@ export function NewReservation() {
     guests: 1,
     guestName: '',
     guestPhone: '',
+    guestEmail: '',
     guestId: '',
     specialRequests: ''
   });
 
   const selectedRoom = rooms.find((r) => r.id === parseInt(formData.roomId));
+
+  // ---------------- Fetch session ----------------
+  useEffect(() => {
+    fetch('/oceanview-backend/user?action=session', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data: SessionData) => {
+        setSession(data);
+        if (data.role === 'CUSTOMER') {
+          setFormData((prev) => ({
+            ...prev,
+            guestName: data.fullName,
+            guestEmail: data.email
+          }));
+        }
+      })
+      .catch(() => toast.error('Failed to load user session'));
+  }, []);
 
   // ---------------- Fetch rooms ----------------
   useEffect(() => {
@@ -93,12 +120,15 @@ export function NewReservation() {
 
     const params = new URLSearchParams();
     params.append('action', 'add');
-    params.append('roomName', selectedRoom.name); // ReservationServlet expects roomName
+    params.append('roomName', selectedRoom.name);
     params.append('checkIn', formData.checkIn);
     params.append('checkOut', formData.checkOut);
-    params.append('amount', String(calculateGrandTotal())); // send final total including VAT/service
+    params.append('amount', String(calculateGrandTotal()));
+
+    // For CUSTOMER, guestName/email is auto-filled from session
     params.append('guestName', formData.guestName);
     params.append('guestPhone', formData.guestPhone || '');
+    params.append('guestEmail', formData.guestEmail);
     params.append('guestId', formData.guestId || '');
 
     fetch('/oceanview-backend/reservation', {
@@ -111,7 +141,7 @@ export function NewReservation() {
       .then((data) => {
         if (data.status === 'success') {
           toast.success('Reservation created successfully!');
-          navigate('/staff/dashboard');
+          navigate(session?.role === 'CUSTOMER' ? '/customer/dashboard' : '/staff/dashboard');
         } else {
           toast.error(data.message || 'Failed to create reservation');
         }
@@ -122,6 +152,7 @@ export function NewReservation() {
   const nextStep = () => setStep((s) => s + 1);
   const prevStep = () => setStep((s) => s - 1);
 
+  // ---------------- Render ----------------
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
       <div>
@@ -171,7 +202,7 @@ export function NewReservation() {
                   <option value="">Select a room...</option>
                   {rooms.map((room) => (
                     <option key={room.id} value={room.id}>
-                      {room.name} - ${room.price}/night
+                      {room.name} - {formatCurrency(room.price)}/night
                     </option>
                   ))}
                 </select>
@@ -204,7 +235,7 @@ export function NewReservation() {
                 <div>
                   <h3 className="font-medium text-gray-900">{selectedRoom.name}</h3>
                   <p className="text-sm text-gray-500">{selectedRoom.description}</p>
-                  <p className="text-ocean-DEFAULT font-bold mt-1">${selectedRoom.price} / night</p>
+                  <p className="text-ocean-DEFAULT font-bold mt-1">{formatCurrency(selectedRoom.price)} / night</p>
                 </div>
               </div>
             )}
@@ -238,11 +269,19 @@ export function NewReservation() {
                 label="Full Name"
                 value={formData.guestName}
                 onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
+                disabled={session?.role === 'CUSTOMER'} // ✅ disable if customer
               />
               <Input
                 label="Phone Number"
                 value={formData.guestPhone}
                 onChange={(e) => setFormData({ ...formData, guestPhone: e.target.value })}
+              />
+              <Input
+                label="Email"
+                type="email"
+                value={formData.guestEmail}
+                onChange={(e) => setFormData({ ...formData, guestEmail: e.target.value })}
+                disabled={session?.role === 'CUSTOMER'} // ✅ disable if customer
               />
               <Input
                 label="Customer ID (Optional)"
@@ -252,7 +291,12 @@ export function NewReservation() {
             </div>
             <div className="flex justify-between">
               <Button variant="ghost" onClick={prevStep}>Back</Button>
-              <Button onClick={nextStep} disabled={!formData.guestName || !formData.guestPhone}>Next Step</Button>
+              <Button
+                onClick={nextStep}
+                disabled={!formData.guestName || !formData.guestPhone || !formData.guestEmail}
+              >
+                Next Step
+              </Button>
             </div>
           </div>
         )}
@@ -268,6 +312,7 @@ export function NewReservation() {
                   <p className="text-sm text-gray-500">Guest</p>
                   <p className="font-medium">{formData.guestName}</p>
                   <p className="text-sm text-gray-500">{formData.guestPhone}</p>
+                  <p className="text-sm text-gray-500">{formData.guestEmail}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-500">Dates</p>
