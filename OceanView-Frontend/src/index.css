@@ -1,5 +1,5 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Tenor+Sans&display=swap');
+/* Google Font - Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,39 +7,40 @@
 
 @layer base {
   body {
-    @apply font-sans text-gray-800 bg-gray-50 antialiased;
+    @apply font-sans text-teal-900 bg-emerald-50 antialiased;
+    font-family: 'Poppins', sans-serif;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif text-ocean-deep;
+    @apply font-semibold text-emerald-800;
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Tropical Green/Teal Theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; 
+  background: #d1fae5;  /* light tropical green */
 }
  
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1; 
-  border-radius: 4px;
+  background: #14b8a6;  /* teal */
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; 
+  background: #0f766e;  /* deep teal */
 }
+
+/* Print Styling */
 @media print {
   @page {
     size: A4;
     margin: 20mm;
   }
-
-
 
   #invoice,
   #invoice * {

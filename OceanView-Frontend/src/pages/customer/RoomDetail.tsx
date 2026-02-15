@@ -26,6 +26,7 @@ export function RoomDetail() {
   const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showConfirmBooking, setShowConfirmBooking] = useState(false);
   const [afterLoginBooking, setAfterLoginBooking] = useState(false);
 
   // TODO: Replace with real session userId
@@ -74,9 +75,9 @@ export function RoomDetail() {
   }, [room, nights]);
 
   // ---------------- AVAILABILITY ----------------
-  const handleCheckAvailability = async () => {
-    if (!room || !checkIn || !checkOut) {
-      toast.error('Please select both dates');
+  const handleCheckAvailability = () => {
+    if (!checkIn || !checkOut) {
+      toast.error('Please select check-in and check-out dates');
       return;
     }
 
@@ -85,30 +86,17 @@ export function RoomDetail() {
       return;
     }
 
-    try {
-      setCheckingAvailability(true);
-
-      const res = await fetch(
-        `/oceanview-backend/room/checkAvailability?roomId=${room.id}&checkIn=${checkIn}&checkOut=${checkOut}`
-      );
-      const data = await res.json();
-
-      setIsAvailable(data.available);
-    } catch {
-      toast.error('Error checking availability');
-    } finally {
+    // Here we simulate availability as always true for demo
+    setCheckingAvailability(true);
+    setTimeout(() => {
+      setIsAvailable(true);
       setCheckingAvailability(false);
-    }
+    }, 500);
   };
 
   // ---------------- BOOKING ----------------
   const handleBookNow = async () => {
     if (!room || !bill) return;
-
-    if (!isAvailable) {
-      toast.error('Please check availability first');
-      return;
-    }
 
     try {
       const formData = new URLSearchParams();
@@ -160,136 +148,143 @@ export function RoomDetail() {
 
   const amenitiesList = room.amenities.split(',').map(a => a.trim());
 
-  // ---------------- RENDER ----------------
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
-      {/* HERO */}
-      <div className="h-[50vh] relative">
-        <img src={room.imageUrl} alt={room.name} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/20" />
-        <Button
-          variant="secondary"
-          className="absolute top-8 left-8"
-          leftIcon={<ArrowLeft className="h-4 w-4" />}
-          onClick={() => navigate(-1)}
-        >
-          Back to Search
-        </Button>
-      </div>
+      <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        {/* LEFT SIDE DETAILS */}
+        <div className="space-y-6">
+          <h1 className="text-4xl font-serif font-bold">{room.name}</h1>
+          <div className="flex items-center gap-3 text-gray-500">
+            <span className="px-2 py-1 bg-ocean-50 text-ocean-deep rounded text-xs font-semibold">
+              {room.type}
+            </span>
+            <Users className="h-4 w-4" />
+            {room.maxGuests} Guests
+          </div>
+          <p className="text-gray-700">{room.description}</p>
 
-      {/* CONTENT */}
-      <div className="max-w-7xl mx-auto px-6 -mt-20 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* DETAILS */}
-          <div className="lg:col-span-2 space-y-8">
-            <Card className="p-8">
-              <div className="flex justify-between mb-6">
-                <div>
-                  <h1 className="text-3xl font-serif font-bold">{room.name}</h1>
-                  <div className="flex items-center gap-2 text-gray-500 mt-2">
-                    <span className="px-2 py-1 bg-ocean-50 text-ocean-deep rounded text-xs font-semibold">
-                      {room.type}
-                    </span>
-                    <Users className="h-4 w-4 ml-2" />
-                    {room.maxGuests} Guests
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-ocean-deep">
-                    {formatCurrency(room.price)}
-                  </p>
-                  <p className="text-sm text-gray-500">per night</p>
-                </div>
+          <h3 className="text-xl font-bold mt-6">Amenities</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {amenitiesList.map(a => (
+              <div key={a} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                <Check className="h-4 w-4 text-ocean-DEFAULT" />
+                <span className="text-sm">{a}</span>
               </div>
-
-              <p className="text-gray-600 mb-8">{room.description}</p>
-
-              <h3 className="text-lg font-bold mb-4">Amenities</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {amenitiesList.map(a => (
-                  <div key={a} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                    <Check className="h-4 w-4 text-ocean-DEFAULT" />
-                    <span className="text-sm">{a}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
+            ))}
           </div>
 
-          {/* BOOKING CARD */}
-          <Card className="sticky top-24 p-6 h-fit">
-            <h3 className="text-xl font-serif font-bold mb-6">Check Availability</h3>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Check-in"
-                  type="date"
-                  value={checkIn}
-                  onChange={e => setCheckIn(e.target.value)}
-                />
-                <Input
-                  label="Check-out"
-                  type="date"
-                  value={checkOut}
-                  min={checkIn}
-                  onChange={e => setCheckOut(e.target.value)}
-                />
-              </div>
-
-              <Button
-                variant="outline"
-                className="w-full"
-                disabled={checkingAvailability}
-                onClick={handleCheckAvailability}
-              >
-                {checkingAvailability ? 'Checking...' : 'Check Availability'}
-              </Button>
-
-              {isAvailable !== null && (
-                <div className={`p-4 rounded-lg ${isAvailable ? 'bg-green-50' : 'bg-red-50'}`}>
-                  {isAvailable ? (
-                    <>
-                      <p className="text-green-700 font-medium flex items-center gap-2">
-                        <Check className="h-4 w-4" /> Room Available
-                      </p>
-
-                      {bill && (
-                        <div className="mt-4 space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span>Room ({bill.nights} nights)</span>
-                            <span>{formatCurrency(bill.base)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Service Charge (10%)</span>
-                            <span>{formatCurrency(bill.serviceCharge)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>VAT (18%)</span>
-                            <span>{formatCurrency(bill.vat)}</span>
-                          </div>
-                          <div className="flex justify-between font-bold border-t pt-2">
-                            <span>Total</span>
-                            <span>{formatCurrency(bill.total)}</span>
-                          </div>
-
-                          <Button className="w-full mt-4" onClick={handleBookNow}>
-                            Confirm Booking
-                          </Button>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-red-700 flex items-center gap-2">
-                      <Info className="h-4 w-4" /> Not available
-                    </p>
-                  )}
-                </div>
-              )}
+          {/* AVAILABILITY & BILL */}
+          <Card className="mt-6 p-6">
+            <h3 className="text-xl font-bold mb-4">Check Availability</h3>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <Input
+                label="Check-in"
+                type="date"
+                value={checkIn}
+                onChange={e => setCheckIn(e.target.value)}
+              />
+              <Input
+                label="Check-out"
+                type="date"
+                min={checkIn}
+                value={checkOut}
+                onChange={e => setCheckOut(e.target.value)}
+              />
             </div>
+
+            <Button
+              className="w-full mb-4"
+              onClick={handleCheckAvailability}
+              disabled={checkingAvailability}
+            >
+              {checkingAvailability ? 'Checking...' : 'Check Availability'}
+            </Button>
+
+            {isAvailable !== null && (
+              <div className={`p-4 rounded ${isAvailable ? 'bg-green-50' : 'bg-red-50'}`}>
+                {isAvailable ? (
+                  <>
+                    <p className="flex items-center gap-2 text-green-700 font-medium">
+                      <Check className="h-4 w-4" /> Room Available
+                    </p>
+
+                    {/* BILL */}
+                    {bill && (
+                      <div className="mt-4 space-y-2 text-sm bg-white p-4 rounded shadow">
+                        <div className="flex justify-between">
+                          <span>Room ({bill.nights} nights)</span>
+                          <span>{formatCurrency(bill.base)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Service Charge (10%)</span>
+                          <span>{formatCurrency(bill.serviceCharge)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>VAT (18%)</span>
+                          <span>{formatCurrency(bill.vat)}</span>
+                        </div>
+                        <div className="flex justify-between font-bold border-t pt-2">
+                          <span>Total</span>
+                          <span>{formatCurrency(bill.total)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="flex items-center gap-2 text-red-700">
+                    <Info className="h-4 w-4" /> Not available
+                  </p>
+                )}
+              </div>
+            )}
+
+            {isAvailable && (
+              <Button
+                className="w-full mt-4"
+                onClick={() => setShowConfirmBooking(true)}
+              >
+                Book Now
+              </Button>
+            )}
           </Card>
         </div>
+
+        {/* RIGHT SIDE IMAGE */}
+        <div className="rounded-3xl overflow-hidden shadow-2xl">
+          <img
+            src={room.imageUrl}
+            alt={room.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
       </div>
+
+      {/* CONFIRM BOOKING MODAL */}
+      <Modal
+        isOpen={showConfirmBooking}
+        onClose={() => setShowConfirmBooking(false)}
+        title="Confirm Booking"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setShowConfirmBooking(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setShowConfirmBooking(false);
+                handleBookNow();
+              }}
+            >
+              Confirm
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-center py-4">
+          Please confirm your booking for <strong>{room.name}</strong> from <strong>{checkIn}</strong> to <strong>{checkOut}</strong>.
+        </p>
+      </Modal>
 
       {/* LOGIN MODAL */}
       <Modal

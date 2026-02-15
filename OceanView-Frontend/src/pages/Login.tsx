@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUser } = useAuth(); // 🔑 Set context user
+  const { setUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +26,6 @@ export function Login() {
       const data = await postUser('login', { email, password });
 
       if (data.status === 'success') {
-        // Build user object
         const user: AuthUser = {
           id: data.userId || 0,
           name: data.fullName,
@@ -34,13 +33,10 @@ export function Login() {
           role: data.role,
         };
 
-        // Save in localStorage and context
         storeLogin(user);
-        setUser(user); // 🔑 Important for ProtectedRoute
-
+        setUser(user);
         toast.success(`Welcome back, ${user.name}`);
 
-        // Determine redirect
         const destination =
           redirectUrl ||
           (user.role === 'ADMIN'
@@ -63,72 +59,80 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&q=80&w=2000"
-          alt="Luxury Resort Background"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-ocean-deep/60 backdrop-blur-[2px]" />
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-md px-4"
-      >
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-serif font-bold text-white mb-2">Ocean View Resort</h1>
-          <p className="text-ocean-100">Experience luxury at its finest</p>
-          {redirectUrl && (
-            <p className="text-sm text-yellow-300 mt-2">Please login to continue booking</p>
-          )}
+    <div className="min-h-screen flex items-center justify-center bg-emerald-50">
+      <div className="flex w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl">
+        {/* Left Image Panel */}
+        <div className="hidden md:block md:w-1/2 relative">
+          <img
+            src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
+            alt="Tropical Resort"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-green-900/40 backdrop-blur-sm" />
         </div>
 
-        <Card className="bg-white/95 backdrop-blur-xl border-white/20 shadow-2xl p-8">
-          <form onSubmit={handleLogin} className="space-y-6">
-            <Input
-              label="Email Address"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-
-            <Input
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
-            <div className="flex justify-end mt-1">
-              <a href="#" className="text-xs text-ocean-DEFAULT hover:underline">
-                Forgot password?
-              </a>
-            </div>
-
-            <Button className="w-full h-12 text-base" size="lg" isLoading={isLoading}>
-              Sign In
-            </Button>
-
-            <div className="text-center mt-4">
-              <p className="text-sm text-gray-600">
-                New to Ocean View?{' '}
-                <a href="/register" className="text-ocean-DEFAULT font-medium hover:underline">
-                  Create Account
-                </a>
+        {/* Right Form Panel */}
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full md:w-1/2 bg-white p-10 md:p-16 flex flex-col justify-center"
+        >
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-green-900 mb-2 font-poppins">
+              Ocean View Resort
+            </h1>
+            <p className="text-green-700 text-sm md:text-base">
+              Experience luxury at its finest
+            </p>
+            {redirectUrl && (
+              <p className="text-sm text-yellow-500 mt-2">
+                Please login to continue booking
               </p>
-            </div>
-          </form>
-        </Card>
-      </motion.div>
+            )}
+          </div>
+
+          <Card className="bg-white/95 backdrop-blur-xl border border-green-100 shadow-xl p-8">
+            <form onSubmit={handleLogin} className="space-y-6">
+              <Input
+                label="Email Address"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Input
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              <div className="flex justify-end mt-1">
+                <a href="#" className="text-xs text-green-700 hover:underline">
+                  Forgot password?
+                </a>
+              </div>
+
+              <Button className="w-full h-12 text-base" size="lg" isLoading={isLoading}>
+                Sign In
+              </Button>
+
+              <div className="text-center mt-4">
+                <p className="text-sm text-gray-600">
+                  New to Ocean View?{' '}
+                  <a href="/register" className="text-green-700 font-medium hover:underline">
+                    Create Account
+                  </a>
+                </p>
+              </div>
+            </form>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   );
 }

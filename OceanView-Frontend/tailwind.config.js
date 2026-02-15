@@ -1,30 +1,33 @@
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-  './index.html',
-  './src/**/*.{js,ts,jsx,tsx}'
-],
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}'
+  ],
   theme: {
     extend: {
       colors: {
-        ocean: {
-          deep: '#0A2463',
-          DEFAULT: '#1E3A8A',
-          light: '#3B82F6',
-          50: '#eff6ff',
-          100: '#dbeafe',
-          900: '#1e3a8a',
+        tropical: {
+          deep: '#0D9488',      // deep teal green
+          DEFAULT: '#14B8A6',   // main teal
+          light: '#5EEAD4',     // light aqua/teal
+          50: '#ECFEFF',        // very light aqua
+          100: '#CCFBF1',       // soft aqua
+          900: '#0F766E',       // darker accent
         },
-        sand: {
-          DEFAULT: '#F5E6D3',
-          dark: '#E5D5C3',
-          light: '#FAF4EB',
+        palm: {
+          DEFAULT: '#A3F7BF',   // soft tropical green
+          dark: '#6EE7B7',
+          light: '#D1FAE5',
+        },
+        sun: {
+          DEFAULT: '#FFD166',   // warm yellow accent
+          hover: '#FACC15',
         },
         coral: {
-          DEFAULT: '#FF6B6B',
+          DEFAULT: '#FF6B6B',   // keep coral for highlights
           hover: '#FA5252',
-        }
+        },
       },
       fontFamily: {
         serif: ['"Tenor Sans"', 'serif'],
