@@ -102,10 +102,10 @@ export function Register() {
         >
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-green-900 mb-2 font-poppins">
-              Join Ocean View
+             Create Your Ocean View Account
             </h1>
             <p className="text-green-700 text-sm md:text-base">
-              Create your account to start booking
+               Register to explore rooms and make your resort reservations
             </p>
           </div>
 
@@ -114,14 +114,14 @@ export function Register() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="First Name"
-                  placeholder="John"
+                  placeholder="Mark"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
                 />
                 <Input
                   label="Last Name"
-                  placeholder="Doe"
+                  placeholder="Wood"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
@@ -176,7 +176,7 @@ export function Register() {
                 <p className="text-sm text-gray-600">
                   Already have an account?{' '}
                   <a href="/login" className="text-green-700 font-medium hover:underline">
-                    Sign In
+                    Sign In Here
                   </a>
                 </p>
               </div>

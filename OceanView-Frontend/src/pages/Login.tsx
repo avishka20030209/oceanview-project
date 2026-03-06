@@ -80,14 +80,14 @@ export function Login() {
         >
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-green-900 mb-2 font-poppins">
-              Ocean View Resort
+               Ocean View Resort Portal
             </h1>
             <p className="text-green-700 text-sm md:text-base">
-              Sign in to continue your unforgettable island escape
+               Sign in to access your account and manage your reservations
             </p>
             {redirectUrl && (
               <p className="text-sm text-yellow-500 mt-2">
-                Please sign in to proceed with your reservation
+                Please sign in to continue with your reservation process
               </p>
             )}
           </div>
@@ -123,9 +123,9 @@ export function Login() {
 
               <div className="text-center mt-4">
                 <p className="text-sm text-gray-600">
-                  New to Ocean View?{' '}
+                 Don't have an account yet?{' '}
                   <a href="/register" className="text-green-700 font-medium hover:underline">
-                    Create Account
+                    Create a New Account
                   </a>
                 </p>
               </div>

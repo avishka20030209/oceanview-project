@@ -42,7 +42,7 @@ public class UserServlet extends HttpServlet {
             return;
         }
 
-        // Optional: handle admin listing users
+    // List all users
         HttpSession session = request.getSession(false);
         if (session == null || !"ADMIN".equals(session.getAttribute("role"))) {
             out.println("{\"status\":\"error\",\"message\":\"Access denied\"}");
@@ -173,9 +173,8 @@ public class UserServlet extends HttpServlet {
                 "\",\"message\":\"" + (success ? "User deleted successfully" : "Delete failed") + "\"}");
     }
 
-    // -------------------------------
-    // Password hashing with SHA-256
-    // -------------------------------
+   // Hash password
+    
     private String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");

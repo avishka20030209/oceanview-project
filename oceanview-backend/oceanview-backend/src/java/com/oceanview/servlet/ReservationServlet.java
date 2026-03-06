@@ -98,7 +98,7 @@ public class ReservationServlet extends HttpServlet {
             }
 
             if ("add".equalsIgnoreCase(action)) {
-                // ----- Get room info -----
+                // Get room ID
                 String roomName = request.getParameter("roomName");
                 int roomId = reservationDAO.getRoomIdByName(roomName);
 
@@ -117,16 +117,16 @@ public class ReservationServlet extends HttpServlet {
 
                 double totalAmount = Double.parseDouble(request.getParameter("amount"));
 
-                // ----- Determine guest info -----
+               // get guest info
                 String guestName;
                 String guestEmail;
 
                 if ("CUSTOMER".equalsIgnoreCase(userRole)) {
-                    // Customer: use their own info
+                    
                     guestName = getGuestNameFromSession(request);
                     guestEmail = getGuestEmailFromSession(request);
                 } else {
-                    // Staff: use entered guest info
+                    
                     guestName = request.getParameter("guestName");
                     guestEmail = request.getParameter("guestEmail");
 
@@ -140,9 +140,9 @@ public class ReservationServlet extends HttpServlet {
                     }
                 }
 
-                // ----- Create reservation -----
+               // create reservation
                 Reservation r = new Reservation();
-                r.setUserId(userId);           // staff or customer ID
+                r.setUserId(userId);          
                 r.setGuestName(guestName);
                 r.setGuestEmail(guestEmail);
                 r.setRoomId(roomId);
@@ -158,7 +158,7 @@ public class ReservationServlet extends HttpServlet {
                 return;
             }
 
-            // ----- Cancel Reservation -----
+            // cancel reservation
             if ("cancel".equalsIgnoreCase(action)) {
                 int id = Integer.parseInt(request.getParameter("reservationId"));
                 boolean success = reservationDAO.updateStatus(id, "CANCELLED");
@@ -166,7 +166,7 @@ public class ReservationServlet extends HttpServlet {
                 return;
             }
 
-            // ----- Delete Reservation -----
+           
             if ("delete".equalsIgnoreCase(action)) {
                 int id = Integer.parseInt(request.getParameter("reservationId"));
                 boolean success = reservationDAO.deleteReservation(id);
@@ -174,7 +174,7 @@ public class ReservationServlet extends HttpServlet {
                 return;
             }
 
-            // ----- Update Status -----
+           // Update reservation status
             if ("updateStatus".equalsIgnoreCase(action)) {
                 int id = Integer.parseInt(request.getParameter("id"));
                 String status = request.getParameter("status");
@@ -183,7 +183,7 @@ public class ReservationServlet extends HttpServlet {
                 return;
             }
 
-            // ----- Mark as Paid -----
+            // payment process
             if ("pay".equalsIgnoreCase(action)) {
                 int id = Integer.parseInt(request.getParameter("reservationId"));
                 boolean success = reservationDAO.markAsPaid(id);
@@ -198,7 +198,7 @@ public class ReservationServlet extends HttpServlet {
         }
     }
 
-    // ------------------ HELPER METHODS ------------------
+    //helpers methods
     private Integer getUserIdFromSession(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         return (session != null && session.getAttribute("userId") != null)

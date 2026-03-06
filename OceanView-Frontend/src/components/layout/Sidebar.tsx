@@ -48,7 +48,7 @@ export function Sidebar({ items, role, isOpen, onClose }: SidebarProps) {
               Ocean View
             </h1>
             <p className="text-xs text-teal-200 uppercase tracking-wider font-medium">
-              {role} Portal
+              {role} Panel
             </p>
           </div>
         </div>
@@ -92,15 +92,15 @@ export function Sidebar({ items, role, isOpen, onClose }: SidebarProps) {
       {/* Footer */}
       <div className="p-4 border-t border-emerald-500 shrink-0 space-y-3">
         <div className="bg-emerald-700/40 rounded-lg p-4">
-          <p className="text-xs text-teal-200 mb-1">Need Help?</p>
-          <p className="text-sm text-white font-medium">Contact Support</p>
+          <p className="text-xs text-teal-200 mb-1">We're here for you ?</p>
+          <p className="text-sm text-white font-medium">Contact Us</p>
         </div>
 
         <button
           onClick={handleLogout}
           className="
             w-full flex items-center gap-3 px-4 py-3 rounded-lg
-            text-sm font-medium text-red-400
+            text-sm font-medium text-white -400
             hover:bg-red-500/20 hover:text-red-300
             transition-all
           "

@@ -14,11 +14,11 @@ public class Reservation {
     private Date checkIn;
     private Date checkOut;
     private String status;     
-    private double amount;   // Total amount including VAT & service charge
+    private double amount;
     private boolean paid;      
 
-    private static final double VAT_PERCENT = 0.15;          // 15%
-    private static final double SERVICE_CHARGE_PERCENT = 0.10; // 10%
+    private static final double VAT_PERCENT = 0.15;          
+    private static final double SERVICE_CHARGE_PERCENT = 0.10;
 
     public Reservation() {}
 
@@ -51,7 +51,7 @@ public class Reservation {
         this.paid = paid;
     }
 
-    // Getters & Setters
+   
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

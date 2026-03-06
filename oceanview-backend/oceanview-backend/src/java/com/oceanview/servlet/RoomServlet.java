@@ -41,6 +41,7 @@ public class RoomServlet extends HttpServlet {
                             + "\"price\":" + room.getPrice() + ","
                             + "\"available\":" + room.isAvailable() + ","
                             + "\"maxGuests\":" + room.getMaxGuests() + ","
+                            + "\"type\":\"" + room.getType() + "\","
                             + "\"imageUrl\":\"" + room.getImageUrl() + "\","
                             + "\"description\":\"" + room.getDescription() + "\","
                             + "\"amenities\":\"" + room.getAmenities() + "\""
@@ -59,6 +60,7 @@ public class RoomServlet extends HttpServlet {
                             .append("\"price\":").append(r.getPrice()).append(",")
                             .append("\"available\":").append(r.isAvailable()).append(",")
                             .append("\"maxGuests\":").append(r.getMaxGuests()).append(",")
+                            .append("\"type\":\"").append(r.getType()).append("\",")
                             .append("\"imageUrl\":\"").append(r.getImageUrl()).append("\",")
                             .append("\"description\":\"").append(r.getDescription()).append("\",")
                             .append("\"amenities\":\"").append(r.getAmenities()).append("\"")
@@ -77,7 +79,6 @@ public class RoomServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Add new room
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
@@ -89,6 +90,7 @@ public class RoomServlet extends HttpServlet {
                 room.setPrice(Double.parseDouble(request.getParameter("price")));
                 room.setAvailable(Boolean.parseBoolean(request.getParameter("available")));
                 room.setMaxGuests(Integer.parseInt(request.getParameter("maxGuests")));
+                room.setType(request.getParameter("type"));
                 room.setImageUrl(request.getParameter("imageUrl"));
                 room.setDescription(request.getParameter("description"));
                 room.setAmenities(request.getParameter("amenities"));
@@ -107,6 +109,21 @@ public class RoomServlet extends HttpServlet {
                 boolean success = roomDAO.updateRoomAvailability(roomId, available);
                 if (success) out.println("{\"status\":\"success\",\"message\":\"Availability updated\"}");
                 else out.println("{\"status\":\"error\",\"message\":\"Failed to update availability\"}");
+            } else if ("update".equalsIgnoreCase(action)) { 
+                Room room = new Room();
+                room.setId(Integer.parseInt(request.getParameter("id")));
+                room.setName(request.getParameter("name"));
+                room.setPrice(Double.parseDouble(request.getParameter("price")));
+                room.setAvailable(Boolean.parseBoolean(request.getParameter("available")));
+                room.setMaxGuests(Integer.parseInt(request.getParameter("maxGuests")));
+                room.setType(request.getParameter("type")); 
+                room.setImageUrl(request.getParameter("imageUrl"));
+                room.setDescription(request.getParameter("description"));
+                room.setAmenities(request.getParameter("amenities"));
+
+                boolean success = roomDAO.updateRoom(room);
+                if (success) out.println("{\"status\":\"success\",\"message\":\"Room updated\"}");
+                else out.println("{\"status\":\"error\",\"message\":\"Failed to update room\"}");
             } else {
                 out.println("{\"status\":\"error\",\"message\":\"Invalid action\"}");
             }

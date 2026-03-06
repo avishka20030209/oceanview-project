@@ -29,7 +29,7 @@ public class MyReservationsServlet extends HttpServlet {
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-        // Get current logged-in user ID from session
+       
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

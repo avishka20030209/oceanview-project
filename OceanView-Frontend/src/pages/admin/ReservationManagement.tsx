@@ -270,7 +270,7 @@ export function ReservationManagement() {
 
               {/* Guest */}
               <div>
-                <p className="text-sm text-gray-400">Guest</p>
+                <p className="text-sm text-gray-400">Guest Name</p>
                 <p className="text-lg font-semibold text-gray-800">
                   {r.guestName}
                 </p>
@@ -278,7 +278,7 @@ export function ReservationManagement() {
 
               {/* Room */}
               <div>
-                <p className="text-sm text-gray-400">Room</p>
+                <p className="text-sm text-gray-400">Room Type</p>
                 <p className="font-medium text-teal-700">
                   {r.roomName}
                 </p>
@@ -295,7 +295,7 @@ export function ReservationManagement() {
 
               {/* Amount */}
               <div>
-                <p className="text-sm text-gray-400">Total</p>
+                <p className="text-sm text-gray-400">Amount</p>
                 <p className="text-xl font-bold text-emerald-600">
                   {formatCurrency(r.amount)}
                 </p>
@@ -356,10 +356,10 @@ export function ReservationManagement() {
       {selectedRes && (
         <div className="space-y-4 text-sm">
           <p>ID: {selectedRes.id}</p>
-          <p>Guest: {selectedRes.guestName}</p>
-          <p>Room: {selectedRes.roomName}</p>
+          <p>Guest Name: {selectedRes.guestName}</p>
+          <p>Room Type: {selectedRes.roomName}</p>
           <p>
-            Dates: {format(new Date(selectedRes.checkIn), "MMM d, yyyy")} —{" "}
+            Dates issued: {format(new Date(selectedRes.checkIn), "MMM d, yyyy")} —{" "}
             {format(new Date(selectedRes.checkOut), "MMM d, yyyy")}
           </p>
           <p>Status: {selectedRes.status}</p>
@@ -379,14 +379,14 @@ export function ReservationManagement() {
             Cancel
           </Button>
           <Button onClick={confirmStatusChange}>
-            Save
+            Ok
           </Button>
         </>
       }
     >
       {selectedRes && (
         <div className="space-y-3">
-          <p>Change status for reservation #{selectedRes.id}</p>
+          <p>Change reservation status #{selectedRes.id}</p>
           <select
             className="w-full border rounded px-3 py-2"
             value={editStatus}
@@ -423,7 +423,7 @@ export function ReservationManagement() {
       }
     >
       <p>
-        Are you sure you want to delete reservation #{selectedRes?.id} for{" "}
+        Please confirm if you would like to proceed with canceling this reservation #{selectedRes?.id} for{" "}
         {selectedRes?.guestName}?
       </p>
     </Modal>

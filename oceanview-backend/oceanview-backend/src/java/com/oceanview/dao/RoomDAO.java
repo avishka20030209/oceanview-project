@@ -9,7 +9,7 @@ import java.util.List;
 
 public class RoomDAO {
 
-    // Get all rooms
+    // get rooms
     public List<Room> getAllRooms() throws SQLException {
         List<Room> rooms = new ArrayList<>();
         String sql = "SELECT * FROM rooms";
@@ -25,6 +25,7 @@ public class RoomDAO {
                         rs.getDouble("price"),
                         rs.getBoolean("available"),
                         rs.getInt("max_guests"),
+                        rs.getString("type"), // ✅ new field
                         rs.getString("image_url"),
                         rs.getString("description"),
                         rs.getString("amenities")
@@ -35,11 +36,12 @@ public class RoomDAO {
         return rooms;
     }
 
-    // Get room by ID
+    // get room by id
     public Room getRoomById(int id) throws SQLException {
         String sql = "SELECT * FROM rooms WHERE id = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -49,6 +51,7 @@ public class RoomDAO {
                             rs.getDouble("price"),
                             rs.getBoolean("available"),
                             rs.getInt("max_guests"),
+                            rs.getString("type"), // ✅ new field
                             rs.getString("image_url"),
                             rs.getString("description"),
                             rs.getString("amenities")
@@ -59,9 +62,9 @@ public class RoomDAO {
         return null;
     }
 
-    // Add new room
+    // add room
     public boolean addRoom(Room room) throws SQLException {
-        String sql = "INSERT INTO rooms (name, price, available, max_guests, image_url, description, amenities) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO rooms (name, price, available, max_guests, type, image_url, description, amenities) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -69,15 +72,16 @@ public class RoomDAO {
             stmt.setDouble(2, room.getPrice());
             stmt.setBoolean(3, room.isAvailable());
             stmt.setInt(4, room.getMaxGuests());
-            stmt.setString(5, room.getImageUrl());
-            stmt.setString(6, room.getDescription());
-            stmt.setString(7, room.getAmenities());
+            stmt.setString(5, room.getType()); // ✅ new field
+            stmt.setString(6, room.getImageUrl());
+            stmt.setString(7, room.getDescription());
+            stmt.setString(8, room.getAmenities());
 
             return stmt.executeUpdate() > 0;
         }
     }
 
-    // Update availability
+   // Update room availability
     public boolean updateRoomAvailability(int roomId, boolean available) throws SQLException {
         String sql = "UPDATE rooms SET available = ? WHERE id = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
@@ -88,12 +92,33 @@ public class RoomDAO {
         }
     }
 
-    // Delete room
+     // delete room
     public boolean deleteRoom(int roomId) throws SQLException {
         String sql = "DELETE FROM rooms WHERE id = ?";
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, roomId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+
+    // Update room details
+    public boolean updateRoom(Room room) throws SQLException {
+        String sql = "UPDATE rooms SET name=?, price=?, available=?, max_guests=?, type=?, image_url=?, description=?, amenities=? WHERE id=?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, room.getName());
+            stmt.setDouble(2, room.getPrice());
+            stmt.setBoolean(3, room.isAvailable());
+            stmt.setInt(4, room.getMaxGuests());
+            stmt.setString(5, room.getType());
+            stmt.setString(6, room.getImageUrl());
+            stmt.setString(7, room.getDescription());
+            stmt.setString(8, room.getAmenities());
+            stmt.setInt(9, room.getId());
+
             return stmt.executeUpdate() > 0;
         }
     }

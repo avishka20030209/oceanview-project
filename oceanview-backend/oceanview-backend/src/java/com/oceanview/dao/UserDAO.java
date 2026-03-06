@@ -9,7 +9,7 @@ import java.util.List;
 
 public class UserDAO {
 
-    // Login method using hashed password
+    // User login with hashed password
     public User login(String email, String hashedPassword) throws SQLException {
         User user = null;
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
@@ -33,7 +33,7 @@ public class UserDAO {
         return user;
     }
 
-    // Register new user (hashed password expected)
+    // Register new user
     public boolean register(User user) throws SQLException {
         String sql = "INSERT INTO users (full_name, email, password, role, phone) VALUES (?, ?, ?, ?, ?)";
 
@@ -50,7 +50,7 @@ public class UserDAO {
         }
     }
 
-    // Check if email exists
+   // Check if email exists
     public boolean emailExists(String email) throws SQLException {
         String sql = "SELECT id FROM users WHERE email = ?";
 
@@ -63,7 +63,7 @@ public class UserDAO {
         }
     }
 
-    // Get all users (Admin only)
+    // Get all users (Admin)
     public List<User> getAllUsers() throws SQLException {
         List<User> users = new ArrayList<>();
         String sql = "SELECT id, full_name, email, role, phone FROM users";
@@ -85,7 +85,8 @@ public class UserDAO {
         return users;
     }
 
-    // Update existing user (Admin only)
+    //Update & Delete user:Admin
+    // upadate user
     public boolean update(User user) throws SQLException {
         String sql = "UPDATE users SET full_name=?, email=?, role=?, phone=? WHERE id=?";
 
@@ -102,7 +103,7 @@ public class UserDAO {
         }
     }
 
-    // Delete user (Admin only)
+    // delete user
     public boolean delete(int id) throws SQLException {
         String sql = "DELETE FROM users WHERE id=?";
 
