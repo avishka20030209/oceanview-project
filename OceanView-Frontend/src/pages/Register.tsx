@@ -131,7 +131,7 @@ export function Register() {
               <Input
                 label="Email Address"
                 type="email"
-                placeholder="name@example.com"
+                placeholder="name@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -140,7 +140,7 @@ export function Register() {
               <Input
                 label="Phone Number"
                 type="tel"
-                placeholder="+94 77 123 4567"
+                placeholder="+94 70 48 3444"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required

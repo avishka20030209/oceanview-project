@@ -68,7 +68,7 @@ export function Login() {
             alt="Tropical Resort"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-green-900/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-green-2000/10 backdrop-blur-sm" />
         </div>
 
         {/* Right Form Panel */}
@@ -83,11 +83,11 @@ export function Login() {
               Ocean View Resort
             </h1>
             <p className="text-green-700 text-sm md:text-base">
-              Experience luxury at its finest
+              Sign in to continue your unforgettable island escape
             </p>
             {redirectUrl && (
               <p className="text-sm text-yellow-500 mt-2">
-                Please login to continue booking
+                Please sign in to proceed with your reservation
               </p>
             )}
           </div>

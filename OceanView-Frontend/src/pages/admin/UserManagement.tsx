@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { Table } from '../../components/ui/Table';
-import { Badge } from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { toast } from 'sonner';
 
 interface User {
   id: number;
-  name: string; // mapped from fullName
+  name: string;
   email: string;
   role: string;
   phone?: string;
@@ -29,23 +28,23 @@ export function UserManagement() {
     email: '',
     role: 'STAFF',
     phone: '',
-    password: '' // NEW: password for new user
+    password: ''
   });
 
-  // Fetch all users from backend
   const fetchUsers = async () => {
     try {
       const res = await fetch('/oceanview-backend/user');
       if (!res.ok) throw new Error('Failed to fetch users');
       const data = await res.json();
+
       const mapped: User[] = data.map((u: any) => ({
         id: u.id,
         name: u.fullName,
         email: u.email,
         role: u.role,
         phone: u.phone,
-        avatar: `https://ui-avatars.com/api/?name=${u.fullName}&background=random`
       }));
+
       setUsers(mapped);
     } catch (err: any) {
       toast.error(err.message);
@@ -64,7 +63,7 @@ export function UserManagement() {
         email: user.email,
         role: user.role,
         phone: user.phone || '',
-        password: '' // leave empty when editing
+        password: ''
       });
     } else {
       setEditingUser(null);
@@ -117,10 +116,13 @@ export function UserManagement() {
 
   const handleDelete = async () => {
     if (!userToDelete) return;
+
     try {
-      const res = await fetch(`/oceanview-backend/user?action=delete&id=${userToDelete.id}`, {
-        method: 'POST'
-      });
+      const res = await fetch(
+        `/oceanview-backend/user?action=delete&id=${userToDelete.id}`,
+        { method: 'POST' }
+      );
+
       const result = await res.json();
       if (result.status === 'success') {
         toast.success('User deleted successfully');
@@ -141,130 +143,156 @@ export function UserManagement() {
       u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const columns = [
-    {
-      header: 'User',
-      accessor: (user: User) => (
-        <div className="flex items-center gap-3">
-          <img src={user.avatar} alt={user.name} className="h-8 w-8 rounded-full" />
-          <div>
-            <div className="font-medium text-gray-900">{user.name}</div>
-            <div className="text-xs text-gray-500">{user.email}</div>
-          </div>
-        </div>
-      )
-    },
-    {
-      header: 'Role',
-      accessor: (user: User) => (
-        <Badge variant={user.role === 'ADMIN' ? 'info' : 'success'}>{user.role}</Badge>
-      )
-    },
-    {
-      header: 'Actions',
-      accessor: (user: User) => (
-        <div className="flex gap-2">
-          <button onClick={() => handleOpenModal(user)} className="p-1 text-gray-400 hover:text-ocean-DEFAULT transition-colors">
-            <Edit2 className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => {
-              setUserToDelete(user);
-              setIsDeleteModalOpen(true);
-            }}
-            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
-      )
-    }
-  ];
-
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-8 space-y-8">
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-500">Manage system access and staff roles.</p>
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white rounded-3xl p-8 shadow-xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-white/5 backdrop-blur-3xl"></div>
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold tracking-tight">
+            User Management
+          </h1>
+          <p className="text-emerald-100 mt-2">
+            Manage resort staff and administrative access
+          </p>
         </div>
-        <Button onClick={() => handleOpenModal()} leftIcon={<Plus className="h-4 w-4" />}>
-          Add User
-        </Button>
       </div>
 
-      {/* Search */}
-      <div className="flex items-center gap-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      {/*Stats*/}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-md border border-emerald-100">
+          <p className="text-sm text-gray-500">Total Users</p>
+          <p className="text-2xl font-bold text-emerald-700 mt-1">
+            {users.length}
+          </p>
+        </div>
+
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-md border border-emerald-100">
+          <p className="text-sm text-gray-500">Admins</p>
+          <p className="text-2xl font-bold text-purple-600 mt-1">
+            {users.filter(u => u.role === 'ADMIN').length}
+          </p>
+        </div>
+
+        <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-6 shadow-md border border-emerald-100">
+          <p className="text-sm text-gray-500">Staff</p>
+          <p className="text-2xl font-bold text-teal-600 mt-1">
+            {users.filter(u => u.role === 'STAFF').length}
+          </p>
+        </div>
+
+      </div>
+
+      {/* 🌴 Search + Add Button */}
+      <div className="flex flex-col md:flex-row justify-between gap-4 items-center">
+
+        <div className="flex items-center bg-white/70 backdrop-blur-lg border border-emerald-100 rounded-2xl px-4 py-3 shadow-md w-full md:w-1/3">
           <Input
-            placeholder="Search users by name or email..."
-            className="pl-10"
+            placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="border-0 focus:ring-0 bg-transparent"
           />
         </div>
+
+        <Button
+          onClick={() => handleOpenModal()}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md"
+          leftIcon={<Plus size={16} />}
+        >
+          Add User
+        </Button>
+
       </div>
 
-      <Table data={filteredUsers} columns={columns} />
+      {/* 🌊 Users Grid */}
+      <div className="bg-white rounded-3xl shadow-xl border border-emerald-100 p-8">
 
-      {/* Add/Edit Modal */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+          {filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              className="bg-gradient-to-br from-white to-emerald-50 rounded-2xl p-6 shadow-md border border-emerald-100 hover:shadow-xl transition"
+            >
+              <h2 className="text-lg font-semibold text-emerald-900">
+                {user.name}
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">{user.email}</p>
+
+              <span
+                className={`inline-block mt-3 px-3 py-1 text-xs rounded-full font-semibold ${
+                  user.role === 'ADMIN'
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'bg-emerald-100 text-emerald-700'
+                }`}
+              >
+                {user.role}
+              </span>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => handleOpenModal(user)}
+                  className="p-2 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 transition"
+                >
+                  <Edit2 size={16} />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setUserToDelete(user);
+                    setIsDeleteModalOpen(true);
+                  }}
+                  className="p-2 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+
+        </div>
+
+      </div>
+
+      {/* Modals unchanged */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingUser ? 'Edit User' : 'Add New User'}
+        title={editingUser ? 'Edit User' : 'Add User'}
         footer={
           <>
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit}>{editingUser ? 'Save Changes' : 'Create User'}</Button>
+            <Button onClick={handleSubmit}>
+              {editingUser ? 'Save Changes' : 'Create User'}
+            </Button>
           </>
         }
       >
         <div className="space-y-4">
-          <Input
-            label="Full Name"
-            placeholder="John Doe"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
-          <Input
-            label="Email"
-            type="email"
-            placeholder="john@example.com"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          />
-          <Input
-            label="Phone"
-            placeholder="0123456789"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          />
+          <Input label="Full Name" value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+          <Input label="Email" type="email" value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+          <Input label="Phone" value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
           {!editingUser && (
-            <Input
-              label="Password"
-              type="password"
-              placeholder="Enter password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
+            <Input label="Password" type="password" value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
           )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <select
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="w-full h-10 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean-100"
-            >
-              <option value="STAFF">Staff</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-          </div>
+          <select
+            value={formData.role}
+            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            className="w-full h-10 rounded-md border border-emerald-200 px-3 text-sm"
+          >
+            <option value="STAFF">Staff</option>
+            <option value="ADMIN">Admin</option>
+          </select>
         </div>
       </Modal>
 
-      {/* Delete Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -272,14 +300,15 @@ export function UserManagement() {
         footer={
           <>
             <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
-            <Button variant="danger" onClick={handleDelete}>Delete User</Button>
+            <Button variant="danger" onClick={handleDelete}>Delete</Button>
           </>
         }
       >
-        <p className="text-gray-600">
-          Are you sure you want to delete <strong>{userToDelete?.name}</strong>? This cannot be undone.
+        <p>
+          Are you sure you want to delete <strong>{userToDelete?.name}</strong>?
         </p>
       </Modal>
+
     </div>
   );
 }

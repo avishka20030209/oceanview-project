@@ -32,7 +32,7 @@ export function ReservationManagement() {
 
   const [editStatus, setEditStatus] = useState('');
 
-  // ---------------- Fetch Reservations ----------------
+  // Fetch Reservations
   const fetchReservations = async () => {
     try {
       const res = await fetch('/oceanview-backend/reservation?action=adminAll', {
@@ -130,7 +130,7 @@ export function ReservationManagement() {
     }
   };
 
-  // ---------------- Filtering ----------------
+  //Filtering 
   const filteredReservations = reservations.filter(
     (r) =>
       r.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -138,7 +138,7 @@ export function ReservationManagement() {
       r.id.toString().includes(searchTerm)
   );
 
-  // ---------------- Table Columns ----------------
+  // Table Columns
   const columns = [
     { header: 'ID', accessor: (r: Reservation) => <span className="font-mono text-xs">{r.id}</span> },
     { header: 'Guest', accessor: (r: Reservation) => <span>{r.guestName}</span> },
@@ -197,106 +197,237 @@ export function ReservationManagement() {
     },
   ];
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Reservation Management</h1>
-      </div>
+  
+    return (
+  <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-6 flex flex-col">
 
-      {/* Search */}
-      <div className="flex items-center gap-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-        <Search className="h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Search by guest, room, or ID..."
-          className="pl-8"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      {/* Table */}
-      <Table data={filteredReservations} columns={columns} pagination totalPages={1} />
-
-      {/* Detail Modal */}
-      <Modal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        title="Reservation Details"
-        footer={<Button onClick={() => setIsDetailModalOpen(false)}>Close</Button>}
-      >
-        {selectedRes && (
-          <div className="space-y-4">
-            <div>
-              <p>ID: {selectedRes.id}</p>
-              <p>Guest: {selectedRes.guestName}</p>
-              <p>Room: {selectedRes.roomName}</p>
-              <p>
-                Dates: {selectedRes.checkIn} to {selectedRes.checkOut}
-              </p>
-              <p>Status: {selectedRes.status}</p>
-              <p>Amount: {formatCurrency(selectedRes.amount)}</p>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* Edit Modal */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        title="Edit Reservation Status"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={confirmStatusChange}>Save</Button>
-          </>
-        }
-      >
-        {selectedRes && (
-          <div className="space-y-2">
-            <p>Change status for reservation #{selectedRes.id}</p>
-            <select
-              className="w-full border rounded px-2 py-1"
-              value={editStatus}
-              onChange={(e) => setEditStatus(e.target.value)}
-            >
-              <option value="PENDING">Pending</option>
-              <option value="CONFIRMED">Confirmed</option>
-              <option value="CHECKED_IN">Checked In</option>
-              <option value="CHECKED_OUT">Checked Out</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-          </div>
-        )}
-      </Modal>
-
-      {/* Delete Modal */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Reservation"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              disabled={!selectedRes || !selectedRes.id}
-            >
-              Delete
-            </Button>
-          </>
-        }
-      >
-        <p>
-          Are you sure you want to delete reservation #{selectedRes?.id} for {selectedRes?.guestName}?
-        </p>
-      </Modal>
+    {/* Header */}
+    <div className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-2xl p-6 shadow-lg mb-6">
+      <h1 className="text-3xl font-bold tracking-tight">
+        Reservation Management
+      </h1>
+      <p className="text-emerald-100 mt-1">
+        Manage and monitor all hotel reservations
+      </p>
     </div>
-  );
+
+    {/* Search */}
+    <div className="backdrop-blur-lg bg-white/70 border border-emerald-100 rounded-2xl shadow-md p-4 flex items-center gap-3 mb-6">
+      <div className="bg-emerald-100 p-2 rounded-lg">
+        <Search className="h-4 w-4 text-emerald-600" />
+      </div>
+      <Input
+        placeholder="Search by guest, room, or reservation ID..."
+        className="border-0 focus:ring-0 bg-transparent"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+    </div>
+
+    {/* Scrollable Card Container */}
+    <div className="flex-1 overflow-y-auto pr-2 space-y-5">
+
+      {filteredReservations.map((r) => {
+
+        const statusStyles: Record<string, string> = {
+          CONFIRMED: "bg-emerald-100 text-emerald-700 ring-emerald-300",
+          PENDING: "bg-yellow-100 text-yellow-700 ring-yellow-300",
+          CANCELLED: "bg-red-100 text-red-600 ring-red-300",
+          CHECKED_IN: "bg-teal-100 text-teal-700 ring-teal-300",
+          CHECKED_OUT: "bg-cyan-100 text-cyan-700 ring-cyan-300",
+        };
+
+        return (
+          <div
+            key={r.id}
+            className="group relative bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-emerald-100 hover:-translate-y-1"
+          >
+            {/* Soft Glow Hover Effect */}
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-400/0 via-teal-300/0 to-cyan-300/0 group-hover:from-emerald-400/10 group-hover:via-teal-300/10 group-hover:to-cyan-300/10 transition-all duration-500 pointer-events-none" />
+
+            {/* Top Row */}
+            <div className="flex justify-between items-start mb-5">
+              <div>
+                <p className="text-xs uppercase tracking-wider text-emerald-500 font-semibold">
+                  Reservation
+                </p>
+                <p className="text-xl font-bold text-gray-800">
+                  #{r.id}
+                </p>
+              </div>
+
+              <span
+                className={`px-3 py-1 text-xs rounded-full font-medium ring-1 ${
+                  statusStyles[r.status] || "bg-gray-100 text-gray-600 ring-gray-200"
+                }`}
+              >
+                {r.status.replace("_", " ")}
+              </span>
+            </div>
+
+            {/* Main Content */}
+            <div className="grid md:grid-cols-4 gap-6">
+
+              {/* Guest */}
+              <div>
+                <p className="text-sm text-gray-400">Guest</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {r.guestName}
+                </p>
+              </div>
+
+              {/* Room */}
+              <div>
+                <p className="text-sm text-gray-400">Room</p>
+                <p className="font-medium text-teal-700">
+                  {r.roomName}
+                </p>
+              </div>
+
+              {/* Dates */}
+              <div>
+                <p className="text-sm text-gray-400">Stay</p>
+                <p className="text-sm text-gray-700">
+                  {format(new Date(r.checkIn), "MMM d, yyyy")} —{" "}
+                  {format(new Date(r.checkOut), "MMM d, yyyy")}
+                </p>
+              </div>
+
+              {/* Amount */}
+              <div>
+                <p className="text-sm text-gray-400">Total</p>
+                <p className="text-xl font-bold text-emerald-600">
+                  {formatCurrency(r.amount)}
+                </p>
+              </div>
+
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 border-t pt-4 mt-6">
+              <button
+                onClick={() => handleViewDetails(r)}
+                className="p-2 rounded-full bg-teal-100 hover:bg-teal-200 text-teal-700 transition"
+              >
+                <Eye className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={() => handleEditStatus(r)}
+                className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 transition"
+              >
+                <Edit2 className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={() => handleDelete(r)}
+                disabled={!r.id}
+                className="p-2 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+
+          </div>
+        );
+      })}
+
+      {filteredReservations.length === 0 && (
+        <div className="text-center py-20 text-gray-400">
+          No reservations found.
+        </div>
+      )}
+
+    </div>
+
+    
+
+    {/* Detail Modal */}
+    <Modal
+      isOpen={isDetailModalOpen}
+      onClose={() => setIsDetailModalOpen(false)}
+      title="Reservation Details"
+      footer={
+        <Button onClick={() => setIsDetailModalOpen(false)}>
+          Close
+        </Button>
+      }
+    >
+      {selectedRes && (
+        <div className="space-y-4 text-sm">
+          <p>ID: {selectedRes.id}</p>
+          <p>Guest: {selectedRes.guestName}</p>
+          <p>Room: {selectedRes.roomName}</p>
+          <p>
+            Dates: {format(new Date(selectedRes.checkIn), "MMM d, yyyy")} —{" "}
+            {format(new Date(selectedRes.checkOut), "MMM d, yyyy")}
+          </p>
+          <p>Status: {selectedRes.status}</p>
+          <p>Amount: {formatCurrency(selectedRes.amount)}</p>
+        </div>
+      )}
+    </Modal>
+
+    {/* Edit Modal */}
+    <Modal
+      isOpen={isEditModalOpen}
+      onClose={() => setIsEditModalOpen(false)}
+      title="Update Reservation Status"
+      footer={
+        <>
+          <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={confirmStatusChange}>
+            Save
+          </Button>
+        </>
+      }
+    >
+      {selectedRes && (
+        <div className="space-y-3">
+          <p>Change status for reservation #{selectedRes.id}</p>
+          <select
+            className="w-full border rounded px-3 py-2"
+            value={editStatus}
+            onChange={(e) => setEditStatus(e.target.value)}
+          >
+            <option value="PENDING">Pending</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="CHECKED_IN">Checked In</option>
+            <option value="CHECKED_OUT">Checked Out</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      )}
+    </Modal>
+
+    {/* Delete Modal */}
+    <Modal
+      isOpen={isDeleteModalOpen}
+      onClose={() => setIsDeleteModalOpen(false)}
+      title="Delete Reservation"
+      footer={
+        <>
+          <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmDelete}
+            disabled={!selectedRes || !selectedRes.id}
+          >
+            Delete
+          </Button>
+        </>
+      }
+    >
+      <p>
+        Are you sure you want to delete reservation #{selectedRes?.id} for{" "}
+        {selectedRes?.guestName}?
+      </p>
+    </Modal>
+
+  </div>
+);
 }

@@ -1,238 +1,203 @@
 import React, { useState, useEffect } from 'react';
-import { Table } from '../../components/ui/Table';
-import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Reservation } from '../../types';
-import { format } from 'date-fns';
-import { Search, Eye, Filter, Download } from 'lucide-react';
-import { formatCurrency } from '../../utils/format';
 import { Modal } from '../../components/ui/Modal';
+import { Search, Eye, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { formatCurrency } from '../../utils/format';
+import { Reservation } from '../../types';
 
 export function ReservationSearch() {
-  const [searchTerm, setSearchTerm] = useState('');
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedRes, setSelectedRes] = useState<Reservation | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  // Fetch reservations from backend
-  useEffect(() => {
-    fetch('/oceanview-backend/reservation?action=adminAll', {
-      credentials: 'include' // include session cookies if needed
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === 'success' && Array.isArray(data.reservations)) {
-          setReservations(data.reservations);
-        } else {
-          setReservations([]);
-          toast.error('No reservations found');
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        toast.error('Failed to load reservations');
+  // Fetch Reservations
+  const fetchReservations = async () => {
+    try {
+      const res = await fetch('/oceanview-backend/reservation?action=adminAll', {
+        credentials: 'include',
       });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setReservations(data.reservations || []);
+      } else {
+        toast.error(data.message || 'Failed to load reservations');
+        setReservations([]);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Server error');
+    }
+  };
+
+  useEffect(() => {
+    fetchReservations();
   }, []);
 
+  // Actions 
+  const handleViewDetails = (res: Reservation) => {
+    setSelectedRes(res);
+    setIsDetailModalOpen(true);
+  };
+
+  //  Filtering 
   const filteredReservations = reservations.filter(
-    (res) =>
-      res.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      res.id.toString().includes(searchTerm)
+    (r) =>
+      r.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.id.toString().includes(searchTerm)
   );
 
-  const columns = [
-    {
-      header: 'ID',
-      accessor: (res: Reservation) => (
-        <span className="font-mono text-xs text-gray-500">{res.id}</span>
-      )
-    },
-    {
-      header: 'Guest',
-      accessor: (res: Reservation) => (
-        <div>
-          <div className="font-medium text-gray-900">{res.guestName}</div>
-          <div className="text-xs text-gray-500">{res.guestEmail}</div>
-        </div>
-      )
-    },
-    {
-      header: 'Room',
-      accessor: 'roomName'
-    },
-    {
-      header: 'Dates',
-      accessor: (res: Reservation) => (
-        <div className="text-sm">
-          <div>{format(new Date(res.checkIn), 'MMM d')}</div>
-          <div className="text-gray-400 text-xs">
-            to {format(new Date(res.checkOut), 'MMM d')}
-          </div>
-        </div>
-      )
-    },
-    {
-      header: 'Status',
-      accessor: (res: Reservation) => {
-        const variants: Record<
-          string,
-          'success' | 'warning' | 'error' | 'info' | 'default'
-        > = {
-          CONFIRMED: 'success',
-          PENDING: 'warning',
-          CANCELLED: 'error',
-          CHECKED_IN: 'info',
-          CHECKED_OUT: 'default'
-        };
-        return (
-          <Badge variant={variants[res.status]}>
-            {res.status.replace('_', ' ')}
-          </Badge>
-        );
-      }
-    },
-    {
-      header: 'Actions',
-      accessor: (res: Reservation) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setSelectedRes(res);
-            setIsModalOpen(true);
-          }}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      )
-    }
-  ];
+  //  Export CSV 
   const exportToCSV = () => {
-  if (!filteredReservations.length) {
-    toast.error('No reservations to export');
-    return;
-  }
+    if (!filteredReservations.length) {
+      toast.error('No reservations to export');
+      return;
+    }
+    const headers = ['ID', 'Guest Name', 'Email', 'Room', 'Check In', 'Check Out', 'Status', 'Amount'];
+    const rows = filteredReservations.map((r) => [
+      r.id,
+      r.guestName,
+      r.guestEmail,
+      r.roomName,
+      r.checkIn,
+      r.checkOut,
+      r.status,
+      r.amount,
+    ]);
+    const csvContent = [headers, ...rows].map((e) => e.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `reservations_${new Date().toISOString()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-  // Create CSV header
-  const headers = [
-    'ID',
-    'Guest Name',
-    'Guest Email',
-    'Room Name',
-    'Check In',
-    'Check Out',
-    'Status',
-    'Amount'
-  ];
-
-  // Map data rows
-  const rows = filteredReservations.map((res) => [
-    res.id,
-    res.guestName,
-    res.guestEmail,
-    res.roomName,
-    res.checkIn,
-    res.checkOut,
-    res.status,
-    res.amount
-  ]);
-
-  // Combine header + rows
-  const csvContent =
-    [headers, ...rows].map((e) => e.join(',')).join('\n');
-
-  // Create blob and trigger download
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `reservations_${new Date().toISOString()}.csv`);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+  // Status Styles
+  const statusStyles: Record<string, string> = {
+    CONFIRMED: "bg-emerald-100 text-emerald-700 ring-emerald-300",
+    PENDING: "bg-yellow-100 text-yellow-700 ring-yellow-300",
+    CANCELLED: "bg-red-100 text-red-600 ring-red-300",
+    CHECKED_IN: "bg-teal-100 text-teal-700 ring-teal-300",
+    CHECKED_OUT: "bg-cyan-100 text-cyan-700 ring-cyan-300",
+  };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Search Reservations
-          </h1>
-          <p className="text-gray-500">Find and view booking details.</p>
-        </div>
-        <Button
-  variant="outline"
-  leftIcon={<Download className="h-4 w-4" />}
-  onClick={exportToCSV}
->
-  Export CSV
-</Button>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-6 flex flex-col">
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-2xl p-6 shadow-lg mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Reservation Search</h1>
+        <p className="text-emerald-100 mt-1">Find and view booking details</p>
       </div>
 
-      <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search by guest name, ID, or room..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {/* Search */}
+      <div className="backdrop-blur-lg bg-white/70 border border-emerald-100 rounded-2xl shadow-md p-4 flex items-center gap-3 mb-6">
+        <div className="bg-emerald-100 p-2 rounded-lg">
+          <Search className="h-4 w-4 text-emerald-600" />
         </div>
-        <Button variant="secondary" leftIcon={<Filter className="h-4 w-4" />}>
-          Filters
+        <Input
+          placeholder="Search by guest, room, or reservation ID..."
+          className="border-0 focus:ring-0 bg-transparent"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Button variant="outline" onClick={exportToCSV}>
+          <Download className="h-4 w-4 mr-2" /> Export CSV
         </Button>
       </div>
 
-      <Table data={filteredReservations} columns={columns} pagination totalPages={1} />
+      {/* Reservation Cards */}
+      <div className="flex-1 overflow-y-auto space-y-5 pr-2">
+        {filteredReservations.length > 0 ? (
+          filteredReservations.map((r) => (
+            <div
+              key={r.id}
+              className="group relative bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-emerald-100 hover:-translate-y-1"
+            >
+              {/* Soft Glow Hover */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-400/0 via-teal-300/0 to-cyan-300/0 group-hover:from-emerald-400/10 group-hover:via-teal-300/10 group-hover:to-cyan-300/10 transition-all duration-500 pointer-events-none" />
 
+              {/* Top Row */}
+              <div className="flex justify-between items-start mb-5">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-emerald-500 font-semibold">Reservation</p>
+                  <p className="text-xl font-bold text-gray-800">#{r.id}</p>
+                </div>
+                <span
+                  className={`px-3 py-1 text-xs rounded-full font-medium ring-1 ${
+                    statusStyles[r.status] || "bg-gray-100 text-gray-600 ring-gray-200"
+                  }`}
+                >
+                  {r.status.replace("_", " ")}
+                </span>
+              </div>
+
+              {/* Main Content */}
+              <div className="grid md:grid-cols-4 gap-6">
+                <div>
+                  <p className="text-sm text-gray-400">Guest</p>
+                  <p className="text-lg font-semibold text-gray-800">{r.guestName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Room</p>
+                  <p className="font-medium text-teal-700">{r.roomName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Stay</p>
+                  <p className="text-sm text-gray-700">
+                    {format(new Date(r.checkIn), "MMM d, yyyy")} — {format(new Date(r.checkOut), "MMM d, yyyy")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Total</p>
+                  <p className="text-xl font-bold text-emerald-600">{formatCurrency(r.amount)}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 border-t pt-4 mt-6">
+                <button
+                  onClick={() => handleViewDetails(r)}
+                  className="p-2 rounded-full bg-teal-100 hover:bg-teal-200 text-teal-700 transition"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-20 text-gray-400">No reservations found.</div>
+        )}
+      </div>
+
+      {/* Detail Modal */}
       <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
         title="Reservation Details"
-        footer={<Button onClick={() => setIsModalOpen(false)}>Close</Button>}
+        footer={<Button onClick={() => setIsDetailModalOpen(false)}>Close</Button>}
       >
         {selectedRes && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Reservation ID</p>
-                <p className="font-medium">{selectedRes.id}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Status</p>
-                <Badge variant="info">{selectedRes.status}</Badge>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Guest Name</p>
-                <p className="font-medium">{selectedRes.guestName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="font-medium">{selectedRes.guestEmail}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Check In</p>
-                <p className="font-medium">{selectedRes.checkIn}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Check Out</p>
-                <p className="font-medium">{selectedRes.checkOut}</p>
-              </div>
-            </div>
-            <div className="pt-4 border-t border-gray-100">
-              <p className="text-sm text-gray-500">Total Amount</p>
-              <p className="text-xl font-bold text-ocean-deep">
-                {formatCurrency(selectedRes.amount)}
-              </p>
-            </div>
+          <div className="space-y-4 text-sm">
+            <p>ID: {selectedRes.id}</p>
+            <p>Guest: {selectedRes.guestName}</p>
+            <p>Room: {selectedRes.roomName}</p>
+            <p>
+              Dates: {format(new Date(selectedRes.checkIn), "MMM d, yyyy")} —{" "}
+              {format(new Date(selectedRes.checkOut), "MMM d, yyyy")}
+            </p>
+            <p>Status: {selectedRes.status}</p>
+            <p>Amount: {formatCurrency(selectedRes.amount)}</p>
           </div>
         )}
       </Modal>
+
     </div>
   );
 }

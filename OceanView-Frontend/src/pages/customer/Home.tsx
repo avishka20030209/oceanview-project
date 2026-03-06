@@ -18,29 +18,29 @@ export function CustomerHome() {
           className="flex-1 flex flex-col justify-center"
         >
           <span className="uppercase tracking-[0.3em] text-teal-600 font-semibold mb-4">
-            Welcome to Paradise
+           Discover Coastal Elegance
           </span>
           <h1 className="text-5xl md:text-7xl font-bold text-teal-900 mb-6 leading-tight">
-            Experience Luxury <br /> By The Ocean
+            Where Comfort Meets <br /> Ocean Serenity
           </h1>
           <p className="text-lg md:text-xl text-teal-800/80 mb-8">
-            Discover a tropical sanctuary where lush greenery meets crystal-clear waters.
-            Your perfect escape awaits at Ocean View Resort.
+             Immerse yourself in refined relaxation surrounded by breathtaking sea views
+            and world-class hospitality designed for unforgettable moments.
           </p>
 
           {/* Feature Highlights */}
           <div className="flex flex-wrap gap-6 mb-8">
             <div className="flex items-center gap-3 bg-white/80 backdrop-blur-md p-3 rounded-xl shadow-md">
               <Star className="w-6 h-6 text-teal-600" />
-              <span className="text-teal-900 font-medium">5-Star Service</span>
+              <span className="text-teal-900 font-medium">Premium Hospitality</span>
             </div>
             <div className="flex items-center gap-3 bg-white/80 backdrop-blur-md p-3 rounded-xl shadow-md">
               <Wifi className="w-6 h-6 text-teal-600" />
-              <span className="text-teal-900 font-medium">High-Speed Wi-Fi</span>
+              <span className="text-teal-900 font-medium">Complimentary Connectivity</span>
             </div>
             <div className="flex items-center gap-3 bg-white/80 backdrop-blur-md p-3 rounded-xl shadow-md">
               <Coffee className="w-6 h-6 text-teal-600" />
-              <span className="text-teal-900 font-medium">Gourmet Dining</span>
+              <span className="text-teal-900 font-medium">Signature Culinary Experience</span>
             </div>
           </div>
 
@@ -51,7 +51,7 @@ export function CustomerHome() {
                 size="lg"
                 className="bg-teal-600 text-white min-w-[180px] h-14 hover:bg-teal-700"
               >
-                Book Your Stay
+               Reserve Your Escape
               </Button>
             </Link>
             <Link to="/customer/rooms">
@@ -86,9 +86,9 @@ export function CustomerHome() {
       {/* Optional Additional Features Section */}
       <section className="py-24 bg-teal-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-teal-900 mb-4">Why Choose Us?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-teal-900 mb-4">The Ocean View Difference</h2>
           <p className="text-teal-800/80 mb-12 max-w-2xl mx-auto">
-            Our resort combines luxury, comfort, and exceptional service for an unforgettable stay.
+           We blend elegance, tranquility, and personalized care to create a truly remarkable coastal retreat.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

@@ -39,7 +39,7 @@ export function NewReservation() {
 
   const selectedRoom = rooms.find((r) => r.id === parseInt(formData.roomId));
 
-  // ---------------- Fetch session ----------------
+  //  Fetch session
   useEffect(() => {
     fetch('/oceanview-backend/user?action=session', { credentials: 'include' })
       .then((res) => res.json())
@@ -56,7 +56,7 @@ export function NewReservation() {
       .catch(() => toast.error('Failed to load user session'));
   }, []);
 
-  // ---------------- Fetch rooms ----------------
+  // Fetch rooms 
   useEffect(() => {
     fetch('/oceanview-backend/room')
       .then((res) => res.json())
@@ -64,7 +64,7 @@ export function NewReservation() {
       .catch(() => toast.error('Failed to load rooms'));
   }, []);
 
-  // ---------------- Check room availability ----------------
+  // Check room availability 
   const checkAvailability = () => {
     if (!selectedRoom || !formData.checkIn || !formData.checkOut) return;
     setLoadingAvailability(true);
@@ -94,7 +94,8 @@ export function NewReservation() {
       });
   };
 
-  // ---------------- Calculate totals ----------------
+  // Calculate totals
+
   const calculateNights = () => {
     if (!selectedRoom || !formData.checkIn || !formData.checkOut) return 0;
     const start = new Date(formData.checkIn);
@@ -111,7 +112,7 @@ export function NewReservation() {
   const calculateVAT = () => calculateRoomTotal() * 0.15; // 15%
   const calculateGrandTotal = () => calculateRoomTotal() + calculateServiceCharge() + calculateVAT();
 
-  // ---------------- Submit reservation ----------------
+  // Submit reservation
   const handleSubmit = () => {
     if (!selectedRoom || availability === false) {
       toast.error('Cannot submit: room not available');
@@ -124,8 +125,6 @@ export function NewReservation() {
     params.append('checkIn', formData.checkIn);
     params.append('checkOut', formData.checkOut);
     params.append('amount', String(calculateGrandTotal()));
-
-    // For CUSTOMER, guestName/email is auto-filled from session
     params.append('guestName', formData.guestName);
     params.append('guestPhone', formData.guestPhone || '');
     params.append('guestEmail', formData.guestEmail);
@@ -152,47 +151,66 @@ export function NewReservation() {
   const nextStep = () => setStep((s) => s + 1);
   const prevStep = () => setStep((s) => s - 1);
 
-  // ---------------- Render ----------------
   return (
-    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">New Reservation</h1>
-        <p className="text-gray-500">Create a new booking for a guest.</p>
+  <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-6 flex justify-center">
+    <div className="w-full max-w-5xl space-y-8">
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-2xl p-6 shadow-lg">
+        <h1 className="text-3xl font-bold tracking-tight">New Reservation</h1>
+        <p className="text-emerald-100 mt-1">
+          Create a new booking with our tropical luxury system.
+        </p>
       </div>
 
       {/* Progress Steps */}
-      <div className="flex justify-between items-center mb-8 px-12">
+      <div className="flex justify-between items-center px-6">
         {[
           { num: 1, label: 'Room Selection', icon: Calendar },
           { num: 2, label: 'Guest Details', icon: User },
           { num: 3, label: 'Review & Confirm', icon: CheckCircle }
         ].map((s) => (
-          <div
-            key={s.num}
-            className={`flex flex-col items-center ${step >= s.num ? 'text-ocean-DEFAULT' : 'text-gray-400'}`}
-          >
+          <div key={s.num} className="flex flex-col items-center">
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 border-2 ${
-                step >= s.num ? 'border-ocean-DEFAULT bg-ocean-50' : 'border-gray-200 bg-white'
+              className={`w-12 h-12 flex items-center justify-center rounded-full border-2 transition-all duration-300
+              ${
+                step >= s.num
+                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg'
+                  : 'border-emerald-200 bg-white text-emerald-400'
               }`}
             >
               <s.icon className="h-5 w-5" />
             </div>
-            <span className="text-sm font-medium">{s.label}</span>
+            <span
+              className={`text-sm mt-2 font-medium ${
+                step >= s.num ? 'text-emerald-700' : 'text-gray-400'
+              }`}
+            >
+              {s.label}
+            </span>
           </div>
         ))}
       </div>
 
-      <Card>
-        {/* Step 1: Room & Dates */}
+      {/* Main Card */}
+      <div className="group relative bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 p-8 border border-emerald-100">
+
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-400/0 via-teal-300/0 to-cyan-300/0 group-hover:from-emerald-400/10 group-hover:via-teal-300/10 group-hover:to-cyan-300/10 transition-all duration-500 pointer-events-none" />
+
+        {/* STEP 1 */}
         {step === 1 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold">Select Room & Dates</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-8">
+            <h2 className="text-xl font-bold text-teal-900">
+              Select Room & Dates
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Room Type</label>
+                <label className="block text-sm font-medium text-teal-800 mb-2">
+                  Room Type
+                </label>
                 <select
-                  className="w-full h-10 rounded-md border border-gray-300 px-3 py-2"
+                  className="w-full h-12 rounded-xl border border-emerald-200 px-4 focus:ring-2 focus:ring-emerald-400 focus:outline-none"
                   value={formData.roomId}
                   onChange={(e) => {
                     setFormData({ ...formData, roomId: e.target.value });
@@ -207,6 +225,7 @@ export function NewReservation() {
                   ))}
                 </select>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Check In"
@@ -230,111 +249,164 @@ export function NewReservation() {
             </div>
 
             {selectedRoom && (
-              <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 flex gap-4">
-                <img src={selectedRoom.imageUrl} alt={selectedRoom.name} className="w-24 h-24 object-cover rounded-md" />
+              <div className="flex gap-6 p-6 bg-emerald-50 rounded-2xl border border-emerald-200">
+                <img
+                  src={selectedRoom.imageUrl}
+                  alt={selectedRoom.name}
+                  className="w-28 h-28 object-cover rounded-xl shadow"
+                />
                 <div>
-                  <h3 className="font-medium text-gray-900">{selectedRoom.name}</h3>
-                  <p className="text-sm text-gray-500">{selectedRoom.description}</p>
-                  <p className="text-ocean-DEFAULT font-bold mt-1">{formatCurrency(selectedRoom.price)} / night</p>
+                  <h3 className="font-bold text-teal-900 text-lg">
+                    {selectedRoom.name}
+                  </h3>
+                  <p className="text-sm text-teal-700">
+                    {selectedRoom.description}
+                  </p>
+                  <p className="font-bold text-emerald-600 mt-2">
+                    {formatCurrency(selectedRoom.price)} / night
+                  </p>
                 </div>
               </div>
             )}
 
             <div className="flex items-center gap-4">
               <Button
+                className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl px-6"
                 onClick={checkAvailability}
                 disabled={!selectedRoom || !formData.checkIn || !formData.checkOut || loadingAvailability}
               >
                 {loadingAvailability ? 'Checking...' : 'Check Availability'}
               </Button>
+
               {availability !== null && (
-                <span className={`font-medium ${availability ? 'text-green-600' : 'text-red-600'}`}>
-                  {availability ? 'Available' : 'Not Available'}
+                <span
+                  className={`font-semibold ${
+                    availability ? 'text-emerald-600' : 'text-red-500'
+                  }`}
+                >
+                  {availability ? 'Room Available' : 'Not Available'}
                 </span>
               )}
             </div>
 
             <div className="flex justify-end">
-              <Button onClick={nextStep} disabled={!availability}>Next Step</Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Guest Details */}
-        {step === 2 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold">Guest Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Full Name"
-                value={formData.guestName}
-                onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
-                disabled={session?.role === 'CUSTOMER'} // ✅ disable if customer
-              />
-              <Input
-                label="Phone Number"
-                value={formData.guestPhone}
-                onChange={(e) => setFormData({ ...formData, guestPhone: e.target.value })}
-              />
-              <Input
-                label="Email"
-                type="email"
-                value={formData.guestEmail}
-                onChange={(e) => setFormData({ ...formData, guestEmail: e.target.value })}
-                disabled={session?.role === 'CUSTOMER'} // ✅ disable if customer
-              />
-              <Input
-                label="Customer ID (Optional)"
-                value={formData.guestId}
-                onChange={(e) => setFormData({ ...formData, guestId: e.target.value })}
-              />
-            </div>
-            <div className="flex justify-between">
-              <Button variant="ghost" onClick={prevStep}>Back</Button>
               <Button
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl px-8"
                 onClick={nextStep}
-                disabled={!formData.guestName || !formData.guestPhone || !formData.guestEmail}
+                disabled={!availability}
               >
-                Next Step
+                Next one
               </Button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Review & Confirm */}
-        {step === 3 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold">Review & Confirm</h2>
+        {/* STEP 2 */}
+        {step === 2 && (
+          <div className="space-y-8">
+            <h2 className="text-xl font-bold text-teal-900">
+              Guest Information
+            </h2>
 
-            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 space-y-4">
-              <div className="flex justify-between border-b border-gray-200 pb-4">
+            <div className="grid md:grid-cols-2 gap-6">
+              <Input
+                label="Full Name"
+                value={formData.guestName}
+                onChange={(e) =>
+                  setFormData({ ...formData, guestName: e.target.value })
+                }
+                disabled={session?.role === 'CUSTOMER'}
+              />
+
+              <Input
+                label="Phone Number"
+                value={formData.guestPhone}
+                onChange={(e) =>
+                  setFormData({ ...formData, guestPhone: e.target.value })
+                }
+              />
+
+              <Input
+                label="Email"
+                type="email"
+                value={formData.guestEmail}
+                onChange={(e) =>
+                  setFormData({ ...formData, guestEmail: e.target.value })
+                }
+                disabled={session?.role === 'CUSTOMER'}
+              />
+
+              <Input
+                label="Customer ID (Optional)"
+                value={formData.guestId}
+                onChange={(e) =>
+                  setFormData({ ...formData, guestId: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="flex justify-between">
+              <Button
+                variant="ghost"
+                className="text-emerald-600"
+                onClick={prevStep}
+              >
+                Back
+              </Button>
+
+              <Button
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl px-8"
+                onClick={nextStep}
+                disabled={!formData.guestName || !formData.guestPhone || !formData.guestEmail}
+              >
+                Next one
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3 */}
+        {step === 3 && (
+          <div className="space-y-8">
+            <h2 className="text-xl font-bold text-teal-900">
+              Review & Confirm
+            </h2>
+
+            <div className="bg-emerald-50 p-8 rounded-2xl border border-emerald-200 space-y-6">
+
+              <div className="flex justify-between border-b border-emerald-200 pb-4">
                 <div>
-                  <p className="text-sm text-gray-500">Guest</p>
-                  <p className="font-medium">{formData.guestName}</p>
-                  <p className="text-sm text-gray-500">{formData.guestPhone}</p>
-                  <p className="text-sm text-gray-500">{formData.guestEmail}</p>
+                  <p className="text-sm text-teal-700">Guest</p>
+                  <p className="font-bold text-teal-900">{formData.guestName}</p>
+                  <p className="text-sm text-teal-700">{formData.guestPhone}</p>
+                  <p className="text-sm text-teal-700">{formData.guestEmail}</p>
                 </div>
+
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">Dates</p>
-                  <p className="font-medium">{formData.checkIn} to {formData.checkOut}</p>
+                  <p className="text-sm text-teal-700">Dates</p>
+                  <p className="font-bold text-teal-900">
+                    {formData.checkIn} → {formData.checkOut}
+                  </p>
                 </div>
               </div>
 
-              {/* Breakdown */}
-              <div className="space-y-2">
+              <div className="space-y-3 text-teal-800">
                 <div className="flex justify-between">
                   <span>Room Charges ({calculateNights()} nights)</span>
                   <span>{formatCurrency(calculateRoomTotal())}</span>
                 </div>
-                <div className="flex justify-between text-gray-500">
+
+                <div className="flex justify-between">
                   <span>Service Charge (10%)</span>
                   <span>{formatCurrency(calculateServiceCharge())}</span>
                 </div>
-                <div className="flex justify-between text-gray-500">
+
+                <div className="flex justify-between">
                   <span>VAT (15%)</span>
                   <span>{formatCurrency(calculateVAT())}</span>
                 </div>
-                <div className="flex justify-between border-t border-gray-200 pt-2 font-bold text-ocean-deep">
+
+                <div className="flex justify-between border-t border-emerald-300 pt-3 font-bold text-lg text-emerald-700">
                   <span>Total</span>
                   <span>{formatCurrency(calculateGrandTotal())}</span>
                 </div>
@@ -342,12 +414,27 @@ export function NewReservation() {
             </div>
 
             <div className="flex justify-between">
-              <Button variant="ghost" onClick={prevStep}>Back</Button>
-              <Button onClick={handleSubmit} size="lg">Create Reservation</Button>
+              <Button
+                variant="ghost"
+                className="text-emerald-600"
+                onClick={prevStep}
+              >
+                Back
+              </Button>
+
+              <Button
+                className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:opacity-90 text-white rounded-xl px-10 py-3 shadow-lg"
+                onClick={handleSubmit}
+              >
+                Create Reservation
+              </Button>
             </div>
           </div>
         )}
-      </Card>
+
+      </div>
     </div>
-  );
+  </div>
+);
+
 }

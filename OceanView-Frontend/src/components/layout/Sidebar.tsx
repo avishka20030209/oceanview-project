@@ -30,7 +30,7 @@ export function Sidebar({ items, role, isOpen, onClose }: SidebarProps) {
       className={`
         fixed md:sticky top-0 z-50
         h-screen w-64 flex flex-col
-        bg-ocean-deep text-white
+        bg-gradient-to-b from-teal-700 to-emerald-600 text-white
         transform transition-transform duration-300
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0
@@ -38,16 +38,16 @@ export function Sidebar({ items, role, isOpen, onClose }: SidebarProps) {
       `}
     >
       {/* Header */}
-      <div className="p-6 border-b border-ocean-800 flex items-center justify-between shrink-0">
+      <div className="p-6 border-b border-emerald-500 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
-            <span className="text-xl">🌊</span>
+          <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
+            <span className="text-xl">🌴</span>
           </div>
           <div>
-            <h1 className="font-serif text-xl font-bold tracking-wide text-sand">
+            <h1 className="font-serif text-xl font-bold tracking-wide text-emerald-100">
               Ocean View
             </h1>
-            <p className="text-xs text-ocean-200 uppercase tracking-wider font-medium">
+            <p className="text-xs text-teal-200 uppercase tracking-wider font-medium">
               {role} Portal
             </p>
           </div>
@@ -55,13 +55,13 @@ export function Sidebar({ items, role, isOpen, onClose }: SidebarProps) {
 
         <button
           onClick={onClose}
-          className="md:hidden text-ocean-200 hover:text-white"
+          className="md:hidden text-teal-200 hover:text-emerald-100 transition-colors"
         >
           <X size={20} />
         </button>
       </div>
 
-      {/* Navigation (scrollable area) */}
+      {/* Navigation */}
       <nav className="flex-1 min-h-0 px-4 py-6 space-y-1 overflow-y-auto">
         {items.map((item) => {
           const Icon = item.icon;
@@ -76,23 +76,23 @@ export function Sidebar({ items, role, isOpen, onClose }: SidebarProps) {
                   flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
                   ${
                     isActive
-                      ? 'bg-white/10 text-white shadow-sm'
-                      : 'text-ocean-100 hover:bg-white/5 hover:text-white'
+                      ? 'bg-emerald-500/30 text-white shadow-sm'
+                      : 'text-teal-100 hover:bg-emerald-400/20 hover:text-white'
                   }
                 `
               }
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-5 w-5 text-teal-50" />
               {item.label}
             </NavLink>
           );
         })}
       </nav>
 
-      {/* Footer (always visible) */}
-      <div className="p-4 border-t border-ocean-800 shrink-0 space-y-3">
-        <div className="bg-ocean-900/50 rounded-lg p-4">
-          <p className="text-xs text-ocean-200 mb-1">Need Help?</p>
+      {/* Footer */}
+      <div className="p-4 border-t border-emerald-500 shrink-0 space-y-3">
+        <div className="bg-emerald-700/40 rounded-lg p-4">
+          <p className="text-xs text-teal-200 mb-1">Need Help?</p>
           <p className="text-sm text-white font-medium">Contact Support</p>
         </div>
 
@@ -101,7 +101,7 @@ export function Sidebar({ items, role, isOpen, onClose }: SidebarProps) {
           className="
             w-full flex items-center gap-3 px-4 py-3 rounded-lg
             text-sm font-medium text-red-400
-            hover:bg-red-500/10 hover:text-red-300
+            hover:bg-red-500/20 hover:text-red-300
             transition-all
           "
         >

@@ -35,7 +35,7 @@ import { RoomDetail } from "./pages/customer/RoomDetail";
 import { MyBookings } from "./pages/customer/MyBookings";
 import { RoomSearch } from "./pages/customer/RoomSearch";
 import Contact from "./pages/customer/contact";
-import { SystemLogs } from "./pages/admin/SystemLogs";
+
 
 function App() {
   const { user, loading } = useAuth();
@@ -76,8 +76,6 @@ function App() {
           <Route path="rooms" element={<RoomManagement />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="reservations" element={<ReservationManagement />} />
-         
-          <Route path="logs" element={<SystemLogs />} />
           <Route path="settings" element={<Settings />} />
           <Route path="Reports" element={<AdminReports />} />
         </Route>
